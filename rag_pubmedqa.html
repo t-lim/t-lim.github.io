@@ -1,0 +1,1740 @@
+
+
+<!DOCTYPE html>
+
+
+<html lang="en" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>Retrieval-Augmented Generation for Medical Question-Answering &#8212; Fine-Tuning and Retrieval-Augmentation: Teaching LLMs new tricks</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=e353d410970836974a52" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=e353d410970836974a52" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=e353d410970836974a52" rel="stylesheet" />
+
+  
+  <link href="_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=e353d410970836974a52" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" href="_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=e353d410970836974a52" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52" />
+
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/clipboard.min.js"></script>
+    <script src="_static/copybutton.js"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="_static/togglebutton.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="_static/design-tabs.js"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
+const thebe_selector = ".thebe,.cell"
+const thebe_selector_input = "pre"
+const thebe_selector_output = ".output, .cell_output"
+</script>
+    <script async="async" src="_static/sphinx-thebe.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'rag_pubmedqa';</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Fine-tune Electra encoder transformer model for Medical NLI task" href="electra_nli.html" />
+    <link rel="prev" title="Fine-tune LLM for Medical NLI task" href="finetune_nli.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+  
+
+<a class="navbar-brand logo" href="README.html">
+  
+  
+  
+  
+  
+    <p class="title logo__title">Fine-Tuning and Retrieval-Augmentation: Teaching LLMs new tricks</p>
+  
+</a></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="README.html">
+                    SELF-LEARNING TUTORIAL
+                </a>
+            </li>
+        </ul>
+        <ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="finetune_nli.html">Fine-tune LLM for Medical NLI task</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Retrieval-Augmented Generation for Medical Question-Answering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="electra_nli.html">Fine-tune Electra encoder transformer model for Medical NLI task</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/t-lim/ai-healthcare.git" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/t-lim/ai-healthcare.git/issues/new?title=Issue%20on%20page%20%2Frag_pubmedqa.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="_sources/rag_pubmedqa.ipynb" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.ipynb</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+<script>
+document.write(`
+  <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+  </button>
+`);
+</script>
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+  </button>
+`);
+</script>
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Retrieval-Augmented Generation for Medical Question-Answering</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#load-pubmedqa-articles-and-questions">Load pubmedqa articles and questions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#load-chroma-client-and-default-embedding-model">Load chroma client and default embedding model</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#create-database-collection-with-default-embedding-model">Create database collection with default embedding model</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#load-data-into-database">Load data into database</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#query-and-retrieve-an-example">Query and retrieve an example</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#create-collections-with-alternate-embedding-models">Create collections with alternate embedding models</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#can-be-any-sentence-transformer-model">Can be any sentence-transformer model</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#or-custom-embedding-function">Or custom embedding function</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#compute-retrievel-accuracy-of-the-embeddings-models">Compute retrievel accuracy of the embeddings models</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#t-sne-plot-of-embeddings">t-SNE plot of embeddings</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#helpers-to-prepare-prompt-and-generate-chat">Helpers to prepare prompt and generate chat</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#to-generate-response">To generate response</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#to-create-prompt">To create prompt</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#evaluate-models">Evaluate models</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="retrieval-augmented-generation-for-medical-question-answering">
+<h1>Retrieval-Augmented Generation for Medical Question-Answering<a class="headerlink" href="#retrieval-augmented-generation-for-medical-question-answering" title="Permalink to this heading">#</a></h1>
+<p>This tutorial demonstrates how to implement retrieval-augmented generation (RAG) to support open-source LLM’s – Google’s 2024 gemma 7B-parameter and Meta’s 2023 Llama-2 7B-parameter models – for medical NLP tasks such as QA (question answering). Specifically, it shows how to store documents from the PubMedQA dataset as embeddings vectors in a Chroma database, and retrieve the documents most similar to any query as the context with which to answer the question.</p>
+<p>References:</p>
+<ul class="simple">
+<li><p><a class="github reference external" href="https://github.com/pubmedqa/pubmedqa">pubmedqa/pubmedqa</a></p></li>
+<li><p><a class="reference external" href="https://docs.trychroma.com/api-reference">https://docs.trychroma.com/api-reference</a></p></li>
+<li><p><a class="github reference external" href="https://github.com/stephenc222/example-chroma-vector-embeddings">stephenc222/example-chroma-vector-embeddings</a>”</p></li>
+</ul>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">settings</span>
+<span class="c1"># Chroma requires SQLite &gt; 3.35, if you encounter issues with having too </span>
+<span class="c1"># low of a SQLite version, try installing pysqlite3-binary, then enter</span>
+<span class="c1"># the following three lines in settings.py to swap the packages:</span>
+<span class="c1">#    __import__(&#39;pysqlite3&#39;)</span>
+<span class="c1">#    import sys</span>
+<span class="c1">#    sys.modules[&#39;sqlite3&#39;] = sys.modules.pop(&#39;pysqlite3&#39;)</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">accuracy_score</span><span class="p">,</span> <span class="n">classification_report</span>
+<span class="kn">from</span> <span class="nn">sklearn.manifold</span> <span class="kn">import</span> <span class="n">TSNE</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">tqdm</span>
+<span class="kn">import</span> <span class="nn">textwrap</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
+<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span>
+<span class="kn">from</span> <span class="nn">transformers</span> <span class="kn">import</span> <span class="n">AutoTokenizer</span><span class="p">,</span> <span class="n">AutoModel</span><span class="p">,</span> <span class="n">AutoModelForCausalLM</span>
+<span class="kn">from</span> <span class="nn">transformers</span> <span class="kn">import</span> <span class="n">BitsAndBytesConfig</span>
+<span class="kn">import</span> <span class="nn">chromadb</span>
+<span class="kn">from</span> <span class="nn">chromadb.utils</span> <span class="kn">import</span> <span class="n">embedding_functions</span> 
+<span class="kn">from</span> <span class="nn">chromadb</span> <span class="kn">import</span> <span class="n">Documents</span><span class="p">,</span> <span class="n">EmbeddingFunction</span><span class="p">,</span> <span class="n">Embeddings</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/home/terence/env3.11/lib/python3.11/site-packages/tqdm/auto.py:21: TqdmWarning: IProgress not found. Please update jupyter and ipywidgets. See https://ipywidgets.readthedocs.io/en/stable/user_install.html
+  from .autonotebook import tqdm as notebook_tqdm
+</pre></div>
+</div>
+</div>
+</div>
+<section id="load-pubmedqa-articles-and-questions">
+<h2>Load pubmedqa articles and questions<a class="headerlink" href="#load-pubmedqa-articles-and-questions" title="Permalink to this heading">#</a></h2>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pqal</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_json</span><span class="p">(</span><span class="s1">&#39;pubmedqa-master/data/ori_pqal.json&#39;</span><span class="p">,</span> <span class="n">orient</span><span class="o">=</span><span class="s1">&#39;index&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;CONTEXT:&#39;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">pqal</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;CONTEXTS&#39;</span><span class="p">]))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;QUESTION:&#39;</span><span class="p">,</span> <span class="n">pqal</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;QUESTION&#39;</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;ANSWER:&#39;</span><span class="p">,</span> <span class="n">pqal</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;final_decision&#39;</span><span class="p">])</span>
+<span class="n">pqal</span><span class="p">[</span><span class="s1">&#39;final_decision&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>CONTEXT: Programmed cell death (PCD) is the regulated death of cells within an organism. The lace plant (Aponogeton madagascariensis) produces perforations in its leaves through PCD. The leaves of the plant consist of a latticework of longitudinal and transverse veins enclosing areoles. PCD occurs in the cells at the center of these areoles and progresses outwards, stopping approximately five cells from the vasculature. The role of mitochondria during PCD has been recognized in animals; however, it has been less studied during PCD in plants.
+The following paper elucidates the role of mitochondrial dynamics during developmentally regulated PCD in vivo in A. madagascariensis. A single areole within a window stage leaf (PCD is occurring) was divided into three areas based on the progression of PCD; cells that will not undergo PCD (NPCD), cells in early stages of PCD (EPCD), and cells in late stages of PCD (LPCD). Window stage leaves were stained with the mitochondrial dye MitoTracker Red CMXRos and examined. Mitochondrial dynamics were delineated into four categories (M1-M4) based on characteristics including distribution, motility, and membrane potential (ΔΨm). A TUNEL assay showed fragmented nDNA in a gradient over these mitochondrial stages. Chloroplasts and transvacuolar strands were also examined using live cell imaging. The possible importance of mitochondrial permeability transition pore (PTP) formation during PCD was indirectly examined via in vivo cyclosporine A (CsA) treatment. This treatment resulted in lace plant leaves with a significantly lower number of perforations compared to controls, and that displayed mitochondrial dynamics similar to that of non-PCD cells.
+QUESTION: Do mitochondria play a role in remodelling lace plant leaves during programmed cell death?
+ANSWER: yes
+</pre></div>
+</div>
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>final_decision
+yes      552
+no       338
+maybe    110
+Name: count, dtype: int64
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="load-chroma-client-and-default-embedding-model">
+<h2>Load chroma client and default embedding model<a class="headerlink" href="#load-chroma-client-and-default-embedding-model" title="Permalink to this heading">#</a></h2>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Initialize ChromaDB client</span>
+<span class="n">db_path</span> <span class="o">=</span> <span class="s2">&quot;./database&quot;</span>   <span class="c1"># local path to save database</span>
+<span class="n">chroma_client</span> <span class="o">=</span> <span class="n">chromadb</span><span class="o">.</span><span class="n">PersistentClient</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">db_path</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">cprefix</span> <span class="o">=</span> <span class="s1">&#39;pubmedqa_&#39;</span>
+<span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">chroma_client</span><span class="o">.</span><span class="n">list_collections</span><span class="p">():</span>   <span class="c1"># delete old collections</span>
+    <span class="k">if</span> <span class="n">col</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">cprefix</span><span class="p">):</span>
+        <span class="n">chroma_client</span><span class="o">.</span><span class="n">delete_collection</span><span class="p">(</span><span class="n">col</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+<span class="n">collections</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>      <span class="c1"># dict for the new collections to create</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="create-database-collection-with-default-embedding-model">
+<h2>Create database collection with default embedding model<a class="headerlink" href="#create-database-collection-with-default-embedding-model" title="Permalink to this heading">#</a></h2>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># embedding function that embeds any input text</span>
+<span class="c1"># metadata states how this database should compute similarities (l2 is default)</span>
+<span class="c1"># default embedding model is all-MiniLM-L6-v2</span>
+<span class="n">default_name</span> <span class="o">=</span> <span class="s2">&quot;all-MiniLM-L6-v2&quot;</span>
+<span class="n">collections</span><span class="p">[</span><span class="n">cprefix</span> <span class="o">+</span> <span class="n">default_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">chroma_client</span><span class="o">.</span><span class="n">get_or_create_collection</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">cprefix</span><span class="si">}{</span><span class="n">default_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+    <span class="n">metadata</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;hnsw:space&quot;</span><span class="p">:</span> <span class="s2">&quot;cosine&quot;</span><span class="p">},</span> <span class="c1"># l2 is the default</span>
+<span class="c1">#    embedding_function=embedding_model</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<section id="load-data-into-database">
+<h3>Load data into database<a class="headerlink" href="#load-data-into-database" title="Permalink to this heading">#</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Each document is a context text string</span>
+<span class="n">documents</span> <span class="o">=</span> <span class="n">pqal</span><span class="p">[</span><span class="s1">&#39;CONTEXTS&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">x</span><span class="p">))</span><span class="o">.</span><span class="n">to_list</span><span class="p">()</span>
+<span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">doc</span><span class="p">)</span> <span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="n">documents</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2725
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Each id is the row number</span>
+<span class="n">ids</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">pqal</span><span class="p">))]</span>
+<span class="c1">#metadatas = [{&#39;row&#39;: i} for i in ids]</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load all documents</span>
+<span class="n">collections</span><span class="p">[</span><span class="n">cprefix</span> <span class="o">+</span> <span class="n">default_name</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
+    <span class="n">documents</span><span class="o">=</span><span class="n">documents</span><span class="p">,</span>
+    <span class="n">ids</span><span class="o">=</span><span class="n">ids</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="query-and-retrieve-an-example">
+<h3>Query and retrieve an example<a class="headerlink" href="#query-and-retrieve-an-example" title="Permalink to this heading">#</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Each query is a question text string</span>
+<span class="n">queries</span> <span class="o">=</span> <span class="n">pqal</span><span class="p">[</span><span class="s1">&#39;QUESTION&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">to_list</span><span class="p">()</span>
+<span class="n">gold</span> <span class="o">=</span> <span class="mi">13</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">collections</span><span class="p">[</span><span class="n">cprefix</span> <span class="o">+</span> <span class="n">default_name</span><span class="p">]</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">query_texts</span><span class="o">=</span><span class="n">queries</span><span class="p">[</span><span class="n">gold</span><span class="p">],</span>
+                                                   <span class="n">n_results</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Gold:&#39;</span><span class="p">,</span> <span class="n">gold</span><span class="p">,</span> <span class="s1">&#39;   Retrieved:&#39;</span><span class="p">,</span> <span class="n">result</span><span class="p">[</span><span class="s1">&#39;ids&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Gold: 13    Retrieved: [[&#39;13&#39;]]
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="create-collections-with-alternate-embedding-models">
+<h2>Create collections with alternate embedding models<a class="headerlink" href="#create-collections-with-alternate-embedding-models" title="Permalink to this heading">#</a></h2>
+<section id="can-be-any-sentence-transformer-model">
+<h3>Can be any sentence-transformer model<a class="headerlink" href="#can-be-any-sentence-transformer-model" title="Permalink to this heading">#</a></h3>
+<p>see <a class="reference external" href="https://www.sbert.net/docs/pretrained_models.html">https://www.sbert.net/docs/pretrained_models.html</a></p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Select other sentence-transformer model by name</span>
+<span class="n">other_name</span> <span class="o">=</span> <span class="s1">&#39;NeuML/pubmedbert-base-embeddings&#39;</span>
+<span class="n">other_id</span> <span class="o">=</span> <span class="n">other_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+<span class="n">other_model</span> <span class="o">=</span> <span class="n">embedding_functions</span><span class="o">.</span><span class="n">SentenceTransformerEmbeddingFunction</span><span class="p">(</span>
+    <span class="n">model_name</span><span class="o">=</span><span class="n">other_name</span><span class="p">)</span>
+
+<span class="c1"># Create collection with custom embedding function</span>
+<span class="n">collections</span><span class="p">[</span><span class="n">cprefix</span> <span class="o">+</span> <span class="n">other_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">chroma_client</span><span class="o">.</span><span class="n">get_or_create_collection</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">cprefix</span><span class="si">}{</span><span class="n">other_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+    <span class="n">metadata</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;hnsw:space&quot;</span><span class="p">:</span> <span class="s2">&quot;cosine&quot;</span><span class="p">},</span> <span class="c1"># l2 is the default</span>
+    <span class="n">embedding_function</span><span class="o">=</span><span class="n">other_model</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># Add documents</span>
+<span class="n">collections</span><span class="p">[</span><span class="n">cprefix</span> <span class="o">+</span> <span class="n">other_id</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
+    <span class="n">documents</span><span class="o">=</span><span class="n">documents</span><span class="p">,</span>
+    <span class="n">ids</span><span class="o">=</span><span class="n">ids</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="or-custom-embedding-function">
+<h3>Or custom embedding function<a class="headerlink" href="#or-custom-embedding-function" title="Permalink to this heading">#</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># select custom embeddings model by name from HF hub</span>
+<span class="n">custom_name</span> <span class="o">=</span> <span class="s1">&#39;thenlper/gte-base&#39;</span>
+<span class="n">_model</span> <span class="o">=</span> <span class="n">AutoModel</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">custom_name</span><span class="p">)</span>
+<span class="n">_tokenizer</span> <span class="o">=</span> <span class="n">AutoTokenizer</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">custom_name</span><span class="p">)</span>
+<span class="n">custom_id</span> <span class="o">=</span> <span class="n">custom_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># inherit from EmbeddingFunction class to implement custom embedding function</span>
+<span class="k">class</span> <span class="nc">CustomEmbeddingFunction</span><span class="p">(</span><span class="n">EmbeddingFunction</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Based on https://github.com/stephenc222/example-chroma-vector-embeddings&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">texts</span><span class="p">:</span> <span class="n">Documents</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Embeddings</span><span class="p">:</span>
+        
+        <span class="k">def</span> <span class="nf">generate_embeddings</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;Inspired from https://huggingface.co/thenlper/gte-base model card&quot;&quot;&quot;</span>
+
+            <span class="k">def</span> <span class="nf">average_pool</span><span class="p">(</span><span class="n">last_hidden_states</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
+                             <span class="n">attention_mask</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+                <span class="n">last_hidden</span> <span class="o">=</span> <span class="n">last_hidden_states</span><span class="o">.</span><span class="n">masked_fill</span><span class="p">(</span>
+                    <span class="o">~</span><span class="n">attention_mask</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span><span class="o">.</span><span class="n">bool</span><span class="p">(),</span> <span class="mf">0.0</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">last_hidden</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">attention_mask</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
+
+            <span class="n">inputs</span> <span class="o">=</span> <span class="n">_tokenizer</span><span class="p">(</span>
+                <span class="n">text</span><span class="p">,</span>
+                <span class="n">return_tensors</span><span class="o">=</span><span class="s1">&#39;pt&#39;</span><span class="p">,</span>
+                <span class="n">max_length</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span>
+                <span class="n">truncation</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+                <span class="n">outputs</span> <span class="o">=</span> <span class="n">_model</span><span class="p">(</span><span class="o">**</span><span class="n">inputs</span><span class="p">)</span>
+            <span class="n">attention_mask</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="s1">&#39;attention_mask&#39;</span><span class="p">]</span>
+            <span class="n">embeddings</span> <span class="o">=</span> <span class="n">average_pool</span><span class="p">(</span><span class="n">outputs</span><span class="o">.</span><span class="n">last_hidden_state</span><span class="p">,</span> <span class="n">attention_mask</span><span class="p">)</span>
+            <span class="n">embeddings</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">normalize</span><span class="p">(</span><span class="n">embeddings</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># Optionally normalize</span>
+            <span class="k">return</span> <span class="n">embeddings</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+    
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">generate_embeddings</span><span class="p">,</span> <span class="n">texts</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create collection with custom embedding function</span>
+<span class="n">custom_model</span> <span class="o">=</span> <span class="n">CustomEmbeddingFunction</span><span class="p">()</span>
+<span class="n">collections</span><span class="p">[</span><span class="n">cprefix</span> <span class="o">+</span> <span class="n">custom_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">chroma_client</span><span class="o">.</span><span class="n">get_or_create_collection</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">cprefix</span><span class="si">}{</span><span class="n">custom_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+    <span class="n">metadata</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;hnsw:space&quot;</span><span class="p">:</span> <span class="s2">&quot;cosine&quot;</span><span class="p">},</span> <span class="c1"># l2 is the default</span>
+    <span class="n">embedding_function</span><span class="o">=</span><span class="n">custom_model</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Add documents using custom embeddings</span>
+<span class="n">collections</span><span class="p">[</span><span class="n">cprefix</span> <span class="o">+</span> <span class="n">custom_id</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
+    <span class="n">documents</span><span class="o">=</span><span class="n">documents</span><span class="p">,</span>
+    <span class="n">ids</span><span class="o">=</span><span class="n">ids</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="compute-retrievel-accuracy-of-the-embeddings-models">
+<h3>Compute retrievel accuracy of the embeddings models<a class="headerlink" href="#compute-retrievel-accuracy-of-the-embeddings-models" title="Permalink to this heading">#</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Check accuracy of id of retrieved document given query</span>
+<span class="n">accuracy</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">collection</span> <span class="ow">in</span> <span class="n">collections</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="n">y_pred</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">row</span><span class="p">,</span> <span class="n">query_text</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">enumerate</span><span class="p">(</span><span class="n">queries</span><span class="p">)):</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">collection</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">query_texts</span><span class="o">=</span><span class="n">query_text</span><span class="p">,</span> <span class="n">n_results</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="c1">#print(row, result[&#39;ids&#39;][0])</span>
+        <span class="n">y_pred</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;ids&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]))</span>
+    <span class="n">accuracy</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">accuracy_score</span><span class="p">(</span><span class="n">y_true</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">queries</span><span class="p">))),</span> <span class="n">y_pred</span><span class="o">=</span><span class="n">y_pred</span><span class="p">)</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">accuracy</span><span class="p">,</span> <span class="n">orient</span><span class="o">=</span><span class="s1">&#39;index&#39;</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Accuracy&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>1000it [00:24, 40.08it/s]
+1000it [00:30, 32.37it/s]
+1000it [00:30, 32.73it/s]
+</pre></div>
+</div>
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Accuracy</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>pubmedqa_all-MiniLM-L6-v2</th>
+      <td>0.969</td>
+    </tr>
+    <tr>
+      <th>pubmedqa_pubmedbert-base-embeddings</th>
+      <td>0.979</td>
+    </tr>
+    <tr>
+      <th>pubmedqa_gte-base</th>
+      <td>0.988</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+</section>
+</section>
+<section id="t-sne-plot-of-embeddings">
+<h2>t-SNE plot of embeddings<a class="headerlink" href="#t-sne-plot-of-embeddings" title="Permalink to this heading">#</a></h2>
+<p>True pairs of documents and queries are observed to group closely together in 2D embeddings space.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Generate embeddings for documents and queries</span>
+<span class="n">embeddings</span> <span class="o">=</span> <span class="p">[[],</span> <span class="p">[]]</span>
+<span class="n">max_tsne</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">documents</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">max_tsne</span><span class="p">)):</span>
+    <span class="n">embeddings</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">custom_model</span><span class="p">([</span><span class="n">documents</span><span class="p">[</span><span class="n">i</span><span class="p">]]))</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">max_tsne</span><span class="p">)):</span>
+    <span class="n">embeddings</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">custom_model</span><span class="p">([</span><span class="n">queries</span><span class="p">[</span><span class="n">i</span><span class="p">]]))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>100%|██████████| 1000/1000 [02:20&lt;00:00,  7.11it/s]
+100%|██████████| 1000/1000 [00:28&lt;00:00, 34.85it/s]
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">tsne_plot</span><span class="p">(</span><span class="n">documents</span><span class="p">,</span> <span class="n">queries</span><span class="p">):</span>
+    <span class="s2">&quot;Creates and TSNE model and plots it&quot;</span>
+    <span class="n">tsne_model</span> <span class="o">=</span> <span class="n">TSNE</span><span class="p">(</span><span class="n">perplexity</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">early_exaggeration</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">n_components</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                      <span class="n">init</span><span class="o">=</span><span class="s1">&#39;pca&#39;</span><span class="p">,</span> <span class="n">n_iter</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">23</span><span class="p">)</span>
+    <span class="n">new_values</span> <span class="o">=</span> <span class="n">tsne_model</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">documents</span> <span class="o">+</span> <span class="n">queries</span><span class="p">))</span>
+
+    <span class="n">x</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">new_values</span><span class="p">:</span>
+        <span class="n">x</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">y</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)):</span>
+        <span class="n">is_query</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">i</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">documents</span><span class="p">))</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;C</span><span class="si">{</span><span class="n">is_query</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">documents</span><span class="p">)),</span>
+                     <span class="n">xy</span><span class="o">=</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span>
+                     <span class="n">xytext</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="k">if</span> <span class="n">is_query</span> <span class="k">else</span> <span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">),</span>
+                     <span class="n">color</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;C</span><span class="si">{</span><span class="n">is_query</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                     <span class="n">textcoords</span><span class="o">=</span><span class="s1">&#39;offset points&#39;</span><span class="p">,</span>
+                     <span class="n">ha</span><span class="o">=</span><span class="s1">&#39;right&#39;</span> <span class="k">if</span> <span class="n">is_query</span> <span class="k">else</span> <span class="s2">&quot;left&quot;</span><span class="p">,</span>
+                     <span class="n">va</span><span class="o">=</span><span class="s1">&#39;bottom&#39;</span> <span class="k">if</span> <span class="n">is_query</span> <span class="k">else</span> <span class="s2">&quot;top&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;t-SNE plot of embeddings of documents and queries&#39;</span><span class="p">)</span>
+    <span class="c1">#plt.show()</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># tsne-plot of documents and queries, in two different colors, in 2D space</span>
+<span class="n">tsne_plot</span><span class="p">(</span><span class="n">embeddings</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">embeddings</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/a847ca2ae132b3936fcb05f90e763a189c2aaa8cf0969b1056e9a7229ea2527f.png" src="_images/a847ca2ae132b3936fcb05f90e763a189c2aaa8cf0969b1056e9a7229ea2527f.png" />
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># View sample embedding vectors</span>
+<span class="kn">from</span> <span class="nn">sentence_transformers.util</span> <span class="kn">import</span> <span class="n">cos_sim</span>
+<span class="n">example</span> <span class="o">=</span> <span class="mi">42</span>
+<span class="n">sentences</span> <span class="o">=</span> <span class="p">[</span><span class="n">documents</span><span class="p">[</span><span class="n">example</span><span class="p">]]</span>
+<span class="n">custom_embeddings</span> <span class="o">=</span> <span class="n">custom_model</span><span class="p">(</span><span class="n">sentences</span><span class="p">)</span>
+<span class="n">other_embeddings</span> <span class="o">=</span> <span class="n">other_model</span><span class="p">(</span><span class="n">sentences</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">cos_sim</span><span class="p">(</span><span class="n">other_embeddings</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">custom_embeddings</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>tensor([[-0.0158]])
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Custom embedding:&#39;</span><span class="p">,</span> <span class="n">custom_name</span><span class="p">,</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">custom_embeddings</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Custom embedding: thenlper/gte-base 
+ [[-3.300e-02 -1.820e-02 -1.890e-02 -7.320e-02  6.990e-02  2.530e-02
+   5.660e-02  1.590e-02 -3.380e-02 -4.950e-02  1.050e-02  1.090e-02
+  -3.080e-02  2.960e-02 -3.140e-02  9.750e-02  4.360e-02  2.440e-02
+   3.600e-02  1.620e-02  2.290e-02 -5.680e-02  7.400e-03  2.930e-02
+   1.100e-03 -4.820e-02  3.960e-02  3.570e-02 -6.770e-02  4.300e-03
+   5.590e-02 -4.730e-02  4.000e-03 -6.810e-02  4.890e-02  1.110e-02
+   1.230e-02  2.370e-02 -1.840e-02 -6.430e-02 -6.180e-02 -2.400e-03
+  -4.290e-02  6.100e-03 -4.820e-02 -4.400e-03 -2.720e-02  2.350e-02
+   3.000e-04  8.700e-03 -8.690e-02 -1.950e-02 -5.200e-03 -2.300e-03
+   2.000e-03  4.720e-02  9.000e-03 -4.700e-03 -1.110e-02 -7.830e-02
+   3.340e-02  2.190e-02  4.380e-02 -4.550e-02  1.600e-02  2.470e-02
+  -8.000e-04  1.920e-02 -5.580e-02 -1.030e-02  2.800e-03  2.520e-02
+   1.030e-02 -3.140e-02  2.800e-03 -4.240e-02 -9.600e-03 -2.520e-02
+   3.980e-02  9.000e-03  3.200e-03  3.300e-02 -1.430e-02  6.910e-02
+   5.700e-03 -6.440e-02  2.310e-02  1.270e-02 -4.170e-02  6.630e-02
+   2.570e-02 -2.630e-02  5.700e-02  3.690e-02 -1.000e-03 -3.070e-02
+   3.470e-02 -4.340e-02 -2.020e-02 -3.590e-02 -1.010e-02 -6.170e-02
+  -2.250e-02 -2.100e-03 -8.200e-02 -1.760e-02 -1.250e-02  2.970e-02
+   3.160e-02  4.200e-03  4.200e-03 -1.940e-02  3.870e-02 -3.420e-02
+  -6.720e-02  5.980e-02  7.090e-02 -1.000e-03 -3.440e-02 -7.900e-03
+  -1.130e-02  2.920e-02  6.180e-02  8.120e-02 -7.800e-03 -1.350e-02
+  -1.990e-02  4.990e-02 -5.300e-03 -3.190e-02  8.200e-03  5.730e-02
+   4.220e-02 -4.800e-02 -1.310e-02  1.160e-02 -3.700e-03  2.080e-02
+   1.790e-02 -2.330e-02  5.770e-02 -2.300e-03 -1.400e-03  3.990e-02
+   2.710e-02 -4.350e-02  3.970e-02 -3.140e-02  4.800e-03  3.560e-02
+   3.800e-03  5.210e-02  2.320e-02 -4.700e-02  2.980e-02  8.100e-03
+  -2.120e-02 -9.200e-03 -4.020e-02  2.210e-02  3.370e-02  3.200e-03
+   1.940e-02 -5.000e-03 -2.460e-02  1.210e-02  2.190e-02 -8.800e-03
+   1.800e-03  3.380e-02 -3.390e-02 -1.050e-02  4.810e-02  6.700e-03
+  -2.320e-02  3.430e-02  3.610e-02  4.000e-02 -7.800e-03  4.400e-03
+  -8.040e-02  5.240e-02 -5.000e-04  3.360e-02  6.700e-03 -5.520e-02
+   5.190e-02 -4.200e-03  1.910e-02 -1.190e-02 -6.000e-02 -4.100e-02
+   6.100e-03  3.150e-02  6.320e-02 -2.780e-02 -2.810e-02  3.700e-02
+  -3.550e-02  2.540e-02 -3.400e-03 -5.600e-03  4.070e-02 -1.220e-02
+  -4.750e-02 -1.120e-02  3.920e-02  5.800e-03 -3.570e-02  6.070e-02
+  -5.800e-03 -3.600e-03 -7.100e-03 -7.600e-03  1.200e-03  2.900e-03
+   5.020e-02 -1.520e-02  3.080e-02 -7.660e-02  4.570e-02  1.250e-02
+  -4.460e-02  2.360e-02 -3.250e-02  6.310e-02  6.140e-02 -3.690e-02
+  -1.360e-02 -2.250e-02 -2.330e-02 -2.320e-02  3.120e-02  1.310e-02
+   2.820e-02 -2.600e-02  1.840e-02 -6.660e-02  7.910e-02 -7.480e-02
+  -2.490e-02  4.500e-02  2.580e-02  9.210e-02  9.700e-03 -4.100e-03
+   2.180e-02 -2.530e-02 -1.290e-02 -4.200e-02 -1.040e-02 -2.720e-02
+  -1.740e-02 -6.800e-03  7.100e-03 -4.760e-02 -8.100e-03  3.720e-02
+   9.540e-02  5.140e-02 -7.500e-03 -1.800e-03  4.190e-02 -1.480e-02
+  -2.930e-02 -7.090e-02 -4.260e-02 -1.010e-02  6.400e-03 -1.000e-02
+   5.430e-02  1.920e-02 -1.120e-02 -2.800e-03  1.440e-02 -2.150e-02
+   6.860e-02 -1.800e-03 -1.930e-02 -3.150e-02  5.700e-03  4.330e-02
+  -1.490e-02 -6.720e-02  2.720e-02 -3.060e-02  4.800e-03 -2.810e-02
+  -5.890e-02  2.140e-02 -4.900e-03  7.940e-02  2.110e-02 -1.960e-02
+   3.220e-02 -1.400e-02  1.920e-02 -2.000e-04  1.960e-02  1.440e-02
+   7.400e-03  2.370e-02  2.000e-04 -1.620e-02 -8.100e-03 -1.800e-03
+  -1.140e-02 -2.670e-02 -2.080e-01  3.490e-02  5.000e-03 -3.330e-02
+   3.800e-02 -9.000e-04  1.300e-03  9.100e-03 -5.690e-02  1.770e-02
+  -8.800e-03  2.810e-02  2.470e-02  4.630e-02  4.000e-02  2.330e-02
+  -1.400e-03 -6.280e-02 -1.980e-02  3.090e-02  2.510e-02 -5.260e-02
+  -1.650e-02 -1.620e-02  1.500e-02  8.330e-02  1.200e-02  2.840e-02
+  -7.110e-02 -2.880e-02  1.500e-02 -6.700e-03 -9.900e-03  1.570e-02
+   5.000e-03 -7.600e-03  2.690e-02 -2.730e-02 -2.160e-02 -4.200e-02
+  -1.330e-02 -5.080e-02 -3.020e-02  3.300e-03  5.620e-02 -6.200e-03
+   1.690e-02 -1.520e-02  5.050e-02  4.750e-02  2.580e-02  9.900e-03
+  -3.890e-02  4.200e-03 -2.770e-02 -2.310e-02  1.790e-02 -8.700e-03
+  -4.150e-02 -4.590e-02  1.530e-02 -1.240e-02 -5.000e-03 -7.680e-02
+  -2.290e-02 -5.900e-02 -3.550e-02 -5.230e-02  6.340e-02  2.140e-02
+   1.730e-02 -2.050e-02 -3.260e-02 -7.160e-02 -1.530e-02 -3.150e-02
+  -3.120e-02 -2.280e-02 -6.400e-03 -2.200e-02 -6.350e-02 -2.700e-02
+   8.000e-04  2.530e-02  0.000e+00 -4.060e-02 -2.090e-02  1.880e-02
+  -1.980e-02 -3.600e-02  6.720e-02 -2.180e-02 -3.330e-02  3.090e-02
+  -7.300e-03  3.500e-02  3.790e-02 -5.800e-03  3.610e-02  1.330e-02
+   2.390e-02 -5.850e-02  2.210e-02  5.000e-03 -6.900e-03 -3.490e-02
+  -7.970e-02 -7.000e-03  5.670e-02 -6.700e-02  5.170e-02 -6.660e-02
+   1.720e-02 -6.760e-02 -1.970e-02 -5.160e-02  3.260e-02  3.850e-02
+   3.500e-03  1.390e-02 -1.330e-02  5.820e-02 -6.940e-02 -6.560e-02
+  -6.230e-02  4.900e-03  1.590e-02 -1.390e-02 -1.620e-02  1.990e-02
+  -2.000e-02 -2.300e-03  3.050e-02  2.000e-02  3.490e-02  1.200e-02
+  -5.950e-02 -5.070e-02 -2.160e-02  1.590e-02 -1.540e-02  3.720e-02
+  -7.900e-03 -7.000e-04  3.570e-02  1.650e-02  3.580e-02 -2.460e-02
+  -1.920e-02  4.510e-02 -1.130e-02 -2.670e-02  2.330e-02 -6.670e-02
+   3.500e-03 -2.510e-02  4.680e-02  7.600e-03  8.500e-03 -2.420e-02
+  -6.190e-02 -1.730e-02  3.400e-03 -2.280e-02 -1.430e-02  3.740e-02
+  -3.610e-02 -2.720e-02 -1.260e-02  1.080e-02 -6.900e-03 -2.670e-02
+  -2.760e-02  4.990e-02 -1.440e-02  2.620e-02 -1.070e-02 -8.900e-03
+   3.690e-02  2.480e-02  2.050e-02 -3.870e-02 -3.100e-02  3.360e-02
+   8.160e-02  0.000e+00 -2.360e-02 -4.900e-02 -1.050e-02  4.270e-02
+   2.980e-02  1.880e-02 -1.060e-02  4.000e-04 -4.740e-02 -2.420e-02
+   7.400e-03  4.110e-02  1.030e-02  2.170e-02  1.080e-02  9.400e-03
+  -2.860e-02 -1.610e-02 -2.000e-04 -1.057e-01  6.330e-02  1.460e-02
+  -4.160e-02  4.390e-02 -6.070e-02 -1.190e-02  3.200e-03  3.010e-02
+   2.320e-02  1.600e-03 -4.700e-02 -8.300e-03  7.800e-03 -5.650e-02
+   2.860e-02 -4.080e-02 -5.600e-02 -7.100e-03 -6.700e-03  1.390e-02
+   1.190e-02 -1.290e-02  3.960e-02 -3.890e-02 -1.200e-02 -4.100e-02
+  -2.230e-02  1.710e-02  3.230e-02 -6.000e-04  1.880e-02  9.800e-03
+  -1.520e-02  5.950e-02  2.990e-02 -5.100e-03 -4.740e-02 -2.370e-02
+   6.700e-03  6.860e-02 -1.990e-02 -1.480e-02 -8.000e-04  5.660e-02
+   6.600e-03  2.200e-03 -8.200e-03 -4.810e-02  2.720e-02 -5.000e-03
+  -2.920e-02  1.640e-02 -2.790e-02 -4.200e-03  2.610e-02  3.000e-02
+  -1.240e-02  2.510e-02  2.890e-02  3.910e-02 -6.620e-02  1.480e-02
+   2.420e-02 -4.810e-02 -4.020e-02 -6.910e-02  3.000e-03 -1.790e-02
+  -6.100e-03 -1.650e-02 -7.000e-04 -4.780e-02  2.610e-02 -5.090e-02
+  -3.600e-02  3.070e-02 -1.660e-02 -1.970e-02  2.660e-02 -6.280e-02
+   3.350e-02 -7.700e-03 -5.330e-02  3.470e-02 -2.600e-03 -5.100e-03
+  -3.570e-02  2.500e-03  1.520e-02  1.740e-02  6.310e-02  8.940e-02
+   4.500e-03 -1.270e-02 -7.700e-02  6.800e-02  5.480e-02 -3.740e-02
+  -2.340e-02  3.330e-02  1.460e-02 -6.290e-02  7.800e-03  2.830e-02
+  -1.400e-02 -5.790e-02  6.080e-02  3.050e-02 -5.890e-02 -2.480e-02
+  -1.200e-03  8.600e-03 -4.100e-03  1.260e-02 -6.200e-03 -3.970e-02
+   7.170e-02  4.030e-02  2.750e-02  6.220e-02 -1.720e-02  3.960e-02
+   1.820e-02  1.061e-01  6.230e-02  5.090e-02  1.550e-02  5.230e-02
+  -5.300e-03 -6.330e-02  1.870e-02  2.500e-03 -1.810e-02  1.270e-02
+   1.070e-02  2.970e-02  1.590e-02  3.630e-02 -5.100e-03 -4.400e-03
+  -1.560e-02  1.550e-02  8.220e-02  2.500e-03  2.910e-02 -2.030e-02
+  -7.000e-02 -3.920e-02  2.980e-02  1.050e-02  3.550e-02 -1.280e-02
+  -2.940e-02 -1.100e-03 -5.730e-02 -1.940e-02  8.230e-02 -2.100e-03
+  -1.020e-02  1.330e-02 -3.600e-03  9.900e-03  2.210e-02  3.140e-02
+  -7.300e-03  9.000e-04 -8.900e-03  1.530e-02  4.080e-02  2.430e-02
+   9.300e-03 -4.160e-02 -8.400e-03  2.910e-02  7.070e-02 -3.060e-02
+  -4.520e-02 -2.490e-02 -3.410e-02 -1.130e-02  2.860e-02  4.920e-02
+   7.500e-03 -1.140e-02  3.590e-02 -9.500e-03 -2.100e-03 -6.600e-03
+  -4.070e-02 -4.400e-03  5.090e-02  3.630e-02  3.220e-02 -1.330e-02
+   3.070e-02 -2.270e-02 -2.160e-02  1.280e-02 -2.740e-02  6.550e-02
+  -3.590e-02 -2.840e-02 -9.930e-02  2.800e-03  3.890e-02  6.400e-03
+  -7.040e-02  6.620e-02 -3.390e-02 -8.400e-03  1.070e-02 -4.200e-03
+   1.250e-02  2.640e-02 -2.970e-02  2.080e-02 -1.350e-02  5.140e-02
+  -3.260e-02  2.000e-02  3.110e-02  7.500e-03 -2.790e-02  3.680e-02
+  -1.390e-02  2.490e-02 -2.850e-02 -3.290e-02 -2.470e-02 -8.950e-02
+   2.790e-02  6.100e-03 -2.440e-02 -8.260e-02  3.710e-02 -2.300e-03
+   4.180e-02  1.110e-02  3.730e-02 -1.600e-03 -8.310e-02 -4.520e-02
+  -3.380e-02  8.500e-03 -1.990e-02 -2.000e-03  3.670e-02 -5.610e-02
+   1.200e-03 -2.760e-02 -3.030e-02  1.110e-02 -4.400e-03  5.000e-04]]
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Other embedding:&#39;</span><span class="p">,</span> <span class="n">other_name</span><span class="p">,</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">other_embeddings</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Other embedding: NeuML/pubmedbert-base-embeddings 
+ [[ 4.1550e-01  1.9460e-01  7.2040e-01 -2.3700e-02 -5.7920e-01  4.3200e-01
+   3.7090e-01 -5.8380e-01  2.1830e-01  3.1450e-01 -6.7880e-01  3.7070e-01
+   4.7700e-02  2.7790e-01  3.6290e-01  1.6510e-01  3.8680e-01 -7.4990e-01
+  -1.5590e-01 -7.2150e-01 -3.6300e-01 -1.3800e-01  1.0400e-01  6.1200e-01
+  -5.7300e-02  1.3920e-01 -3.9240e-01  1.1250e-01 -5.8400e-02 -1.1068e+00
+  -5.5580e-01 -8.8530e-01  4.5600e-01 -9.7450e-01  3.8300e-01  6.5600e-01
+   4.1870e-01 -3.5930e-01 -6.2110e-01 -1.8610e-01 -4.3670e-01 -4.6800e-02
+  -4.6960e-01 -1.1697e+00  3.9950e-01  6.2570e-01 -6.0870e-01  3.2460e-01
+   4.3210e-01  2.1790e-01 -5.1810e-01 -2.6200e-02  1.4490e-01  5.4740e-01
+   7.8160e-01 -1.6350e-01  4.3840e-01 -6.5400e-02  1.3766e+00  4.9160e-01
+  -1.6140e-01 -8.0700e-02  1.3840e-01  2.2150e-01  1.5770e-01  1.0532e+00
+  -2.2730e-01 -1.5665e+00 -2.9120e-01 -4.8190e-01 -5.2830e-01  9.7700e-02
+  -8.0310e-01  1.4450e-01 -1.1526e+00  6.2390e-01 -1.0000e-04  6.7380e-01
+  -3.2370e-01  2.9490e-01  4.6900e-02 -6.8400e-01  2.6530e-01 -6.2500e-01
+  -8.4210e-01  5.3950e-01  1.1080e+00 -4.6110e-01  2.8380e-01  5.9080e-01
+   5.8210e-01 -4.0360e-01 -2.7300e-01 -7.4110e-01  4.4830e-01 -5.1840e-01
+   3.0110e-01 -3.8290e-01  2.5470e-01 -5.3930e-01  6.6430e-01  8.9100e-02
+   1.8000e-01  7.0000e-02  3.0590e-01  8.7090e-01  1.4610e-01 -4.4240e-01
+   3.6340e-01 -9.9300e-02  9.3020e-01 -3.0570e-01  1.9760e-01 -3.4740e-01
+   1.5700e-01 -8.1270e-01 -3.4900e-01 -5.5780e-01 -1.9830e-01 -2.8240e-01
+   7.4800e-02  6.6410e-01 -2.3530e-01  3.0220e-01  5.3290e-01 -4.4310e-01
+   6.5610e-01 -4.3220e-01 -2.8580e-01 -1.6100e-01  2.1380e-01  1.3590e-01
+   2.6120e-01  5.0720e-01  5.9640e-01  1.1230e-01 -3.9870e-01  5.6800e-02
+  -2.6610e-01 -7.4340e-01 -9.9490e-01  2.5290e-01 -2.3160e-01  4.6200e-02
+  -2.3140e-01 -5.7300e-01  1.0208e+00  7.1560e-01 -2.4900e-02 -2.8080e-01
+   9.8580e-01  3.4340e-01 -7.1260e-01  2.8040e-01 -5.1170e-01 -2.9070e-01
+   4.2600e-01  1.9350e-01 -3.3890e-01 -5.9100e-02  5.8440e-01  5.3250e-01
+  -4.8540e-01  2.4970e-01  3.5310e-01  4.6900e-01  2.5080e-01 -3.0920e-01
+   1.2860e-01  4.4890e-01 -1.9940e-01  5.6810e-01 -4.9820e-01  2.8600e-01
+   4.1920e-01  8.7430e-01  8.4550e-01  2.7780e-01  5.5060e-01 -2.2280e-01
+  -5.8640e-01 -2.2140e-01 -2.0600e-02  5.9500e-02  1.7520e-01 -8.7040e-01
+   7.1820e-01  3.0980e-01 -1.0806e+00 -2.5210e-01 -3.6340e-01  1.7100e-01
+  -6.7120e-01  6.9760e-01 -1.8880e-01 -1.0840e-01 -7.2000e-03 -3.0250e-01
+   5.3310e-01 -4.1200e-02  9.0580e-01  7.7010e-01  6.9300e-02  4.2800e-01
+  -4.0160e-01 -8.7680e-01  1.7440e-01  6.1280e-01 -2.2200e-02 -8.3720e-01
+  -1.0600e-02 -3.9120e-01 -2.3540e-01  1.9940e-01  6.9750e-01 -2.2100e-01
+  -6.5390e-01 -1.1680e-01  2.4560e-01  5.5040e-01 -5.0230e-01 -6.0950e-01
+  -1.5320e-01  7.0600e-02 -1.5280e-01  4.4550e-01  4.5490e-01 -4.8480e-01
+  -1.7990e-01  7.0000e-03 -7.4040e-01  5.2170e-01  2.4610e-01 -8.6490e-01
+  -1.4140e-01  3.1330e-01  2.7880e-01 -4.6170e-01 -4.3660e-01  5.6340e-01
+   7.5100e-01 -9.1930e-01  3.7610e-01 -3.3760e-01 -5.1400e-02 -7.3040e-01
+   7.3830e-01 -9.3100e-02 -1.8620e-01  9.3100e-02 -5.3470e-01  5.8210e-01
+   3.5780e-01 -4.7000e-03 -1.1960e-01 -1.3309e+00  8.2600e-02 -4.7790e-01
+   1.1770e-01 -9.9910e-01  5.9830e-01  5.6690e-01  5.5790e-01  6.0900e-02
+  -1.8650e-01  6.3800e-01 -3.1850e-01 -8.3000e-02  4.3700e-01  8.9680e-01
+  -1.3510e-01  6.4490e-01 -2.5990e-01  3.8980e-01 -1.6030e-01  1.0914e+00
+  -2.5240e-01 -6.4140e-01  5.3300e-02 -6.5950e-01 -5.8510e-01  6.6040e-01
+  -5.6930e-01  1.8300e-02 -8.9170e-01  9.7000e-03 -2.6180e-01  1.8870e-01
+   2.3000e-01 -2.9240e-01  3.9600e-02 -2.6120e-01  1.3000e-01 -6.8100e-02
+   4.8820e-01  4.7730e-01  3.3100e-01 -2.7430e-01  3.5150e-01  5.2810e-01
+  -3.3150e-01  7.4700e-01 -3.4780e-01 -6.7540e-01 -9.6100e-01  2.8020e-01
+   1.2930e-01 -3.3500e-01  5.2800e-02 -1.6900e-01 -7.9970e-01  6.1600e-01
+   1.4370e-01  1.2940e-01  4.4290e-01 -2.1390e-01  6.1030e-01  6.8180e-01
+   1.4660e-01  1.0390e-01 -4.5080e-01 -2.5390e-01 -9.4910e-01  1.0240e-01
+   2.2240e-01 -6.4700e-02 -2.2170e-01 -1.5400e-02  2.9580e-01 -3.3510e-01
+  -1.0544e+00  3.3910e-01 -6.0000e-02 -3.9500e-02 -4.9950e-01 -6.0990e-01
+   1.3530e-01  3.6410e-01 -9.3400e-02 -9.2300e-02  2.1900e-01  1.5980e-01
+   3.6080e-01 -4.9360e-01 -3.0600e-01  4.7560e-01  5.7960e-01 -2.7450e-01
+   4.7940e-01  1.4880e-01  1.8860e-01  7.7980e-01  2.7920e-01 -1.1332e+00
+   8.2950e-01 -6.9970e-01  3.7200e-01 -1.9380e-01 -2.9150e-01 -3.8000e-03
+   8.9300e-02  2.3240e-01 -1.0650e+00 -3.9730e-01 -2.0550e-01  8.2870e-01
+  -1.1220e-01  7.2500e-02  1.9720e-01  2.0210e-01  1.9300e-02  4.7740e-01
+  -3.0900e-01  2.8810e-01  1.7400e-01 -6.9940e-01 -5.9580e-01 -7.5920e-01
+   1.2700e-02  2.2220e-01 -2.1790e-01 -2.1940e-01  3.4000e-01 -2.8790e-01
+  -6.0300e-01 -3.3710e-01 -9.1070e-01  9.7040e-01  4.6660e-01  4.5000e-03
+   4.8070e-01  5.0530e-01 -4.2650e-01 -6.0690e-01  9.0450e-01  1.2900e-01
+   2.1900e-01 -9.9290e-01 -1.5220e-01  9.6200e-02 -1.1760e-01  6.2740e-01
+  -5.0000e-03  3.4100e-02 -3.0520e-01 -5.3910e-01 -2.8860e-01  3.0800e-02
+  -4.5790e-01  7.1610e-01  1.5080e-01  3.3520e-01 -7.1700e-01 -4.3560e-01
+  -1.2240e-01 -1.3480e-01  2.9600e-02  9.7100e-01 -3.9250e-01 -3.3010e-01
+   3.9060e-01 -8.9100e-02  1.0210e-01 -4.7550e-01 -2.8670e-01  7.5400e-01
+   4.3340e-01  4.7110e-01  2.5510e-01 -6.3150e-01 -5.2200e-01  2.3020e-01
+   7.5600e-02  6.2000e-02  9.7080e-01  5.6520e-01  1.7290e-01 -9.3300e-02
+   4.8430e-01 -2.6260e-01  2.2490e-01  1.6160e-01 -7.2080e-01  6.5600e-01
+   2.8000e-03  3.2910e-01 -1.2570e-01 -3.1600e-02  2.0280e-01  2.6620e-01
+   2.0820e-01  1.2704e+00  2.1140e-01 -1.7320e+00 -5.1060e-01 -8.1600e-02
+  -2.6870e-01  5.1640e-01  1.5510e-01  1.8230e-01 -5.2740e-01  2.0470e-01
+   9.2230e-01  6.2080e-01  4.5470e-01 -4.8380e-01 -8.2940e-01  5.5230e-01
+   6.3130e-01 -6.6170e-01 -8.5600e-01  4.5270e-01  1.2309e+00  3.6030e-01
+   6.5940e-01 -2.6280e-01  1.3380e-01  5.7040e-01  1.0450e-01 -3.8800e-02
+   6.7100e-02  2.3720e-01 -2.5780e-01 -5.9820e-01 -3.7010e-01 -1.6330e-01
+  -1.0010e-01 -7.4950e-01 -4.0900e-01  1.6500e-02  2.3430e-01  6.9500e-02
+   2.9650e-01  4.1240e-01 -5.6430e-01  3.9580e-01 -3.8250e-01  3.5850e-01
+  -5.0790e-01  1.0985e+00 -4.2080e-01  2.7760e-01 -2.4820e-01 -2.4390e-01
+   1.9500e-02 -3.0340e-01  6.9510e-01 -2.3040e-01  1.0110e-01 -1.5220e-01
+   6.7760e-01  1.1330e-01  3.3400e-01 -1.2980e-01 -1.7480e-01  1.9700e-01
+  -4.2760e-01  7.1780e-01 -3.1300e-02  4.0460e-01  3.2500e-02 -1.8090e-01
+   7.3210e-01  3.8850e-01  7.7600e-01 -3.8150e-01 -4.7310e-01  1.6810e-01
+   1.8680e-01 -9.1800e-02 -2.0270e-01 -1.0503e+00  8.1350e-01 -1.3380e-01
+   2.5200e-02  1.0103e+00  6.7630e-01 -3.3220e-01 -2.4800e-01 -8.5200e-02
+  -3.7230e-01  1.0990e-01 -2.9830e-01 -2.8190e-01  2.0660e-01  7.1930e-01
+  -1.1420e-01  3.3660e-01  1.6190e-01  8.5400e-02 -1.3480e-01  6.6640e-01
+   6.6720e-01 -1.9677e+00  2.6840e-01  4.9400e-02  1.5500e-01 -1.0920e-01
+  -1.7110e-01  2.9460e-01  8.8400e-02 -6.6700e-01 -3.8400e-02  5.7100e-02
+  -1.1490e-01  9.8000e-03 -4.7290e-01 -4.4340e-01 -1.2910e-01  1.6350e-01
+  -4.2190e-01 -1.2430e-01 -2.8140e-01 -3.5690e-01  1.4470e-01  5.8570e-01
+  -8.0040e-01 -5.2810e-01 -4.0640e-01  7.4580e-01  7.0390e-01 -6.5300e-01
+  -4.9720e-01  6.5130e-01 -4.2350e-01  8.5800e-02  2.2300e-02 -3.8980e-01
+  -3.2600e-01  4.0600e-01  1.2420e-01 -6.5610e-01 -5.4900e-02 -4.5900e-01
+   3.3950e-01  3.7710e-01 -5.8450e-01 -6.4100e-01 -5.7130e-01 -1.1510e-01
+   1.2010e-01 -1.9760e-01  1.7970e-01  1.9010e-01  1.2560e-01  9.5650e-01
+   2.8600e-01 -4.1850e-01  3.2600e-02 -6.2770e-01 -1.7100e-02 -7.5600e-02
+  -1.7450e-01 -1.5290e-01 -3.5020e-01 -4.7940e-01  1.0010e-01 -2.1620e-01
+  -5.5030e-01 -1.8630e-01  3.9000e-01  4.7500e-02 -3.8540e-01 -1.5548e+00
+   6.3280e-01 -3.5930e-01 -8.2250e-01 -7.8000e-02 -9.7840e-01 -3.6260e-01
+  -2.8880e-01 -1.1202e+00  2.4640e-01 -4.8300e-01  9.7350e-01  6.7560e-01
+   1.8120e-01 -4.0070e-01 -6.8300e-02  2.2860e-01 -9.1890e-01  9.1750e-01
+  -2.1890e-01 -5.4600e-02  5.6940e-01  1.2980e-01  4.2500e-01 -1.1951e+00
+  -2.4990e-01  5.3200e-02 -6.6800e-02 -7.5400e-01 -1.0060e+00 -3.7560e-01
+  -1.9690e-01 -3.5530e-01 -4.7890e-01  2.9720e-01  5.6740e-01 -4.2990e-01
+  -8.4000e-02 -1.1910e-01 -3.2930e-01 -2.2750e-01  1.9510e-01 -1.6900e-02
+   1.1044e+00  3.4580e-01 -3.9000e-03 -4.8930e-01  8.4720e-01  3.4980e-01
+  -1.4830e-01  8.6100e-02  2.6150e-01 -5.0380e-01  3.7830e-01 -5.0200e-02
+  -4.0800e-02 -4.8440e-01 -5.2430e-01  3.9490e-01 -6.1240e-01  2.2660e-01
+  -3.7380e-01  5.2920e-01 -3.4700e-01 -2.9150e-01 -3.5950e-01 -6.0170e-01
+  -1.2950e-01 -2.4120e-01  2.0190e-01  5.6220e-01  1.4000e-01 -6.2340e-01
+  -5.1000e-02 -5.8550e-01  2.4760e-01 -3.6060e-01 -6.6000e-03 -4.4030e-01
+  -2.7790e-01  4.7220e-01  1.3393e+00 -2.0190e-01 -3.2600e-02 -2.5990e-01
+   1.4640e-01 -3.9440e-01 -3.5500e-02 -1.8830e-01 -1.8400e-01  2.9790e-01
+  -3.0440e-01  1.4840e-01 -4.1530e-01 -4.1630e-01 -1.9440e-01 -5.1600e-01
+   1.3170e-01  1.3400e-01 -1.5490e-01  3.1800e-01 -1.9720e-01 -2.0330e-01
+   2.5160e-01 -2.5210e-01  7.0000e-02 -4.4270e-01  2.1890e-01 -9.8800e-02
+   8.5640e-01 -1.7870e-01 -7.0060e-01 -5.4200e-02  1.5170e-01 -2.1570e-01
+   8.3700e-02  6.8000e-02  4.4160e-01 -7.5200e-02 -1.5710e-01  3.1860e-01
+   2.3290e-01 -5.3810e-01  2.7560e-01  4.5140e-01 -9.8800e-02  2.8980e-01
+  -1.0500e-02 -7.0090e-01 -9.9000e-02  1.4250e-01 -4.1280e-01  3.6580e-01
+  -5.4150e-01 -7.1500e-02 -4.5360e-01 -4.0110e-01  4.1750e-01 -4.7520e-01
+  -5.7250e-01 -4.9000e-01  6.0600e-02  9.8000e-02  5.6290e-01 -3.7430e-01]]
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="helpers-to-prepare-prompt-and-generate-chat">
+<h2>Helpers to prepare prompt and generate chat<a class="headerlink" href="#helpers-to-prepare-prompt-and-generate-chat" title="Permalink to this heading">#</a></h2>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">gc</span>
+<span class="k">def</span> <span class="nf">empty_cache</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;helper attempts to reclaim memory&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;CUDA allocated before: </span><span class="si">{</span><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">memory_allocated</span><span class="p">()</span><span class="o">/</span><span class="mf">1e9</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> GB&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">empty_cache</span><span class="p">()</span>
+    <span class="n">gc</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;CUDA allocated after: </span><span class="si">{</span><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">memory_allocated</span><span class="p">()</span><span class="o">/</span><span class="mf">1e9</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> GB&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<section id="to-generate-response">
+<h3>To generate response<a class="headerlink" href="#to-generate-response" title="Permalink to this heading">#</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">DEFAULT_ROLE</span> <span class="o">=</span> <span class="s2">&quot;You are a helpful AI assistant.&quot;</span>
+<span class="n">DEFAULT_ROLE</span> <span class="o">=</span> <span class="s2">&quot;You are a helpful medical knowledge assistant.&quot;</span>
+<span class="n">MAX_NEW_TOKENS</span> <span class="o">=</span> <span class="mi">8</span>
+<span class="n">TEMPERATURE</span> <span class="o">=</span> <span class="kc">None</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">chat</span><span class="p">(</span><span class="n">prompt</span><span class="p">,</span> <span class="n">role</span><span class="p">,</span>  <span class="n">model</span><span class="p">,</span> <span class="n">tokenizer</span><span class="p">,</span> <span class="n">max_new_tokens</span><span class="o">=</span><span class="n">MAX_NEW_TOKENS</span><span class="p">,</span>
+         <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">skip_special_tokens</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Prompt the model and return response&quot;&quot;&quot;</span>
+
+    <span class="c1"># always prepend with a system prompt</span>
+    <span class="n">input_ids</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">role</span><span class="si">}</span><span class="se">\n</span><span class="si">{</span><span class="n">prompt</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span>
+                          <span class="n">return_tensors</span><span class="o">=</span><span class="s2">&quot;pt&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>
+    <span class="n">input_len</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">input_ids</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+        <span class="n">outputs</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="o">**</span><span class="n">input_ids</span><span class="p">,</span>
+                                 <span class="n">max_new_tokens</span><span class="o">=</span><span class="n">max_new_tokens</span><span class="p">,</span>
+                                 <span class="n">top_p</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                 <span class="n">do_sample</span><span class="o">=</span><span class="nb">bool</span><span class="p">(</span><span class="n">TEMPERATURE</span><span class="p">),</span>
+                                 <span class="n">temperature</span><span class="o">=</span><span class="n">TEMPERATURE</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Input tokens:&#39;</span><span class="p">,</span> <span class="n">input_len</span><span class="p">,</span>
+              <span class="s1">&#39;  Output tokens:&#39;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">outputs</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+    <span class="n">answer</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">outputs</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">input_len</span><span class="p">:],</span>
+                              <span class="n">skip_special_tokens</span><span class="o">=</span><span class="n">skip_special_tokens</span><span class="p">)</span>
+    <span class="k">del</span> <span class="p">[</span><span class="n">input_ids</span><span class="p">,</span> <span class="n">outputs</span><span class="p">]</span>  <span class="c1"># reclaim memory</span>
+    <span class="n">empty_cache</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">answer</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">get_answer</span><span class="p">(</span><span class="n">answer</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;helper to label answer as &#39;yes&#39; or &#39;maybe&#39; or &#39;no&#39;&quot;&quot;&quot;</span> 
+    <span class="n">answer</span> <span class="o">=</span> <span class="n">answer</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;yes&#39;</span><span class="p">,</span> <span class="s1">&#39;maybe&#39;</span><span class="p">,</span> <span class="s1">&#39;no&#39;</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">answer</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">label</span>
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">answer</span><span class="p">)</span>
+    <span class="k">return</span> <span class="s1">&#39;maybe&#39;</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># list of true answers</span>
+<span class="n">y_true</span> <span class="o">=</span> <span class="p">[</span><span class="n">get_answer</span><span class="p">(</span><span class="n">pqal</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;final_decision&#39;</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">pqal</span><span class="p">))]</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="to-create-prompt">
+<h3>To create prompt<a class="headerlink" href="#to-create-prompt" title="Permalink to this heading">#</a></h3>
+<p>Llama and Gemme require slightly different prompt instructions.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">prepare_prompt_gemma</span><span class="p">(</span><span class="n">question</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Create prompt for gemma model&quot;&quot;&quot;</span>
+    
+    <span class="k">if</span> <span class="n">context</span><span class="p">:</span>   <span class="c1"># with context</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">Use the following text to return an answer to the question.</span>
+<span class="s2">Return a concise answer to the question in 1 word.</span>
+
+<span class="s2">Text:</span>
+<span class="si">{</span><span class="n">context</span><span class="si">}</span><span class="s2"></span>
+
+<span class="s2">Question:</span>
+<span class="si">{</span><span class="n">question</span><span class="si">}</span><span class="s2"></span>
+
+<span class="s2">Answer:</span>
+<span class="s2">        &quot;&quot;&quot;</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>         <span class="c1"># without context</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">Return a concise answer to the question in 1 word.</span>
+
+<span class="s2">Question:</span>
+<span class="si">{</span><span class="n">question</span><span class="si">}</span><span class="s2"></span>
+
+<span class="s2">Answer:</span>
+<span class="s2">        &quot;&quot;&quot;</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">prepare_prompt_llama</span><span class="p">(</span><span class="n">question</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Create prompt for llama model&quot;&quot;&quot;</span>
+    
+    <span class="k">if</span> <span class="n">context</span><span class="p">:</span>    <span class="c1"># with context</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">Use the following text to return a concise answer to the question at the end.</span>
+
+<span class="s2">Text:</span>
+<span class="si">{</span><span class="n">context</span><span class="si">}</span><span class="s2"></span>
+
+<span class="s2">Question:</span>
+<span class="si">{</span><span class="n">question</span><span class="si">}</span><span class="s2"></span>
+
+<span class="s2">Answer:</span>
+<span class="s2">        &quot;&quot;&quot;</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>         <span class="c1"># without context</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">Question:</span>
+<span class="si">{</span><span class="n">question</span><span class="si">}</span><span class="s2"></span>
+
+<span class="s2">Answer:</span>
+<span class="s2">        &quot;&quot;&quot;</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">prepare_prompt</span><span class="p">(</span><span class="n">question</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">model_name</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Create prompt given model name&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="s1">&#39;gemma&#39;</span> <span class="ow">in</span> <span class="n">model_name</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">prepare_prompt_gemma</span><span class="p">(</span><span class="n">question</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">prepare_prompt_llama</span><span class="p">(</span><span class="n">question</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="evaluate-models">
+<h2>Evaluate models<a class="headerlink" href="#evaluate-models" title="Permalink to this heading">#</a></h2>
+<p>Compare LLM’s as well as context-retrieval models (i.e. word embeddings models)</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Compare these models for QA accuracy</span>
+<span class="n">model_names</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;google/gemma-7b-it&quot;</span><span class="p">,</span> <span class="s2">&quot;meta-llama/Llama-2-7b-chat-hf&quot;</span><span class="p">]</span>
+
+<span class="c1"># Compare these methods for retrieving context</span>
+<span class="n">choices</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">chroma_client</span><span class="o">.</span><span class="n">list_collections</span><span class="p">()]</span>   <span class="c1"># by querying RAG collections</span>
+<span class="n">choices</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;with-gold&#39;</span><span class="p">,</span> <span class="s1">&#39;no-context&#39;</span><span class="p">]</span>                         <span class="c1"># or with- or without true context</span>
+
+<span class="n">accuracy</span> <span class="o">=</span> <span class="p">{}</span>   <span class="c1"># to store accuracy scores</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">model_name</span> <span class="ow">in</span> <span class="n">model_names</span><span class="p">:</span>
+    <span class="n">accuracy</span><span class="p">[</span><span class="n">model_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    
+    <span class="c1"># Load and quantize model</span>
+    <span class="n">compute_dtype</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">torch</span><span class="p">,</span> <span class="s2">&quot;float16&quot;</span><span class="p">)</span>
+    <span class="n">bnb_config</span> <span class="o">=</span> <span class="n">BitsAndBytesConfig</span><span class="p">(</span>
+        <span class="n">load_in_4bit</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">bnb_4bit_use_double_quant</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">bnb_4bit_quant_type</span><span class="o">=</span><span class="s2">&quot;nf4&quot;</span><span class="p">,</span>
+        <span class="n">bnb_4bit_compute_dtype</span><span class="o">=</span><span class="n">compute_dtype</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">model</span> <span class="o">=</span> <span class="n">AutoModelForCausalLM</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span>
+        <span class="n">model_name</span><span class="p">,</span>
+        <span class="n">device_map</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span>
+        <span class="n">quantization_config</span><span class="o">=</span><span class="n">bnb_config</span><span class="p">,</span> 
+    <span class="p">)</span>
+    <span class="n">tokenizer</span> <span class="o">=</span> <span class="n">AutoTokenizer</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">model_name</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">pad_token</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># Fix missing pad_token error</span>
+        <span class="n">tokenizer</span><span class="o">.</span><span class="n">add_special_tokens</span><span class="p">({</span><span class="s1">&#39;pad_token&#39;</span><span class="p">:</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">eos_token</span><span class="p">})</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">resize_token_embeddings</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tokenizer</span><span class="p">))</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">use_cache</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">pretraining_tp</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="c1"># Example of a prompt and response</span>
+    <span class="n">row</span> <span class="o">=</span> <span class="mi">13</span>
+    <span class="n">question</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">gold</span> <span class="o">=</span> <span class="n">queries</span><span class="p">[</span><span class="n">row</span><span class="p">],</span> <span class="n">documents</span><span class="p">[</span><span class="n">row</span><span class="p">],</span> <span class="n">y_true</span><span class="p">[</span><span class="n">row</span><span class="p">]</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Model=</span><span class="si">{</span><span class="n">model_name</span><span class="si">}</span><span class="s2">.  Example #</span><span class="si">{</span><span class="n">row</span><span class="si">}</span><span class="s2"> with gold:&quot;</span><span class="p">,</span> <span class="p">{</span><span class="n">gold</span><span class="p">})</span>
+    <span class="n">role</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+    <span class="c1"># without context</span>
+    <span class="n">prompt</span> <span class="o">=</span> <span class="n">prepare_prompt</span><span class="p">(</span><span class="n">question</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">model_name</span><span class="o">=</span><span class="n">model_name</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;NO CONTEXT:&#39;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">chat</span><span class="p">(</span><span class="n">prompt</span><span class="p">,</span> <span class="n">role</span><span class="o">=</span><span class="n">role</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">tokenizer</span><span class="o">=</span><span class="n">tokenizer</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;-----------------------------------&#39;</span><span class="p">)</span>
+
+    <span class="c1"># with context</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;WITH CONTEXT:&#39;</span><span class="p">)</span>
+    <span class="n">prompt</span> <span class="o">=</span> <span class="n">prepare_prompt</span><span class="p">(</span><span class="n">question</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">,</span> <span class="n">model_name</span><span class="o">=</span><span class="n">model_name</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">chat</span><span class="p">(</span><span class="n">prompt</span><span class="p">,</span> <span class="n">role</span><span class="o">=</span><span class="n">role</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">tokenizer</span><span class="o">=</span><span class="n">tokenizer</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;-----------------------------------&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Evaluate context choices</span>
+    <span class="k">for</span> <span class="n">choice</span> <span class="ow">in</span> <span class="n">choices</span><span class="p">:</span>  <span class="c1"># loop over each context choice</span>
+        <span class="n">y_pred</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">queries</span><span class="p">))):</span>   <span class="c1"># loop over pubmed examples</span>
+
+            <span class="c1"># The prompt for this example depends on context choice</span>
+            <span class="n">question</span> <span class="o">=</span> <span class="n">queries</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="k">match</span> <span class="n">choice</span><span class="p">:</span>
+                <span class="k">case</span> <span class="s1">&#39;no-context&#39;</span><span class="p">:</span>  <span class="c1"># no context</span>
+                    <span class="n">context</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+                <span class="k">case</span> <span class="s1">&#39;with-gold&#39;</span><span class="p">:</span>   <span class="c1"># true context</span>
+                    <span class="n">context</span> <span class="o">=</span> <span class="n">documents</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                <span class="k">case</span> <span class="k">_</span><span class="p">:</span>             <span class="c1"># with retrieved context </span>
+                    <span class="n">context</span> <span class="o">=</span> <span class="n">collections</span><span class="p">[</span><span class="n">choice</span><span class="p">]</span><span class="o">.</span><span class="n">query</span><span class="p">(</span>
+                        <span class="n">query_texts</span><span class="o">=</span><span class="n">question</span><span class="p">,</span> <span class="n">n_results</span><span class="o">=</span><span class="mi">1</span>
+                    <span class="p">)[</span><span class="s1">&#39;documents&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">prompt</span> <span class="o">=</span> <span class="n">prepare_prompt</span><span class="p">(</span>
+                <span class="n">question</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">,</span> <span class="n">model_name</span><span class="o">=</span><span class="n">model_name</span>
+            <span class="p">)</span>
+
+            <span class="c1"># Generate answer</span>
+            <span class="n">answer</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">chat</span><span class="p">(</span><span class="n">prompt</span><span class="p">,</span><span class="n">role</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">tokenizer</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">())</span>
+            <span class="c1"># print(i, y_true[i], &#39;-&#39;, answer)</span>
+            <span class="n">y_pred</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">get_answer</span><span class="p">(</span><span class="n">answer</span><span class="p">))</span>
+
+        <span class="c1"># Compute classification report</span>
+        <span class="n">accuracy</span><span class="p">[</span><span class="n">model_name</span><span class="p">][</span><span class="n">choice</span><span class="p">]</span> <span class="o">=</span> <span class="n">accuracy_score</span><span class="p">(</span><span class="n">y_true</span><span class="o">=</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="o">=</span><span class="n">y_pred</span><span class="p">)</span>
+        <span class="n">class_report</span> <span class="o">=</span> <span class="n">classification_report</span><span class="p">(</span><span class="n">y_true</span><span class="o">=</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="o">=</span><span class="n">y_pred</span><span class="p">,</span> <span class="n">digits</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Classification Report (context=</span><span class="si">{</span><span class="n">choice</span><span class="si">}</span><span class="s1">, model=</span><span class="si">{</span><span class="n">model_name</span><span class="si">}</span><span class="s1">:&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">class_report</span><span class="p">)</span>
+
+    <span class="k">del</span> <span class="n">model</span>
+    <span class="n">empty_cache</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Loading checkpoint shards: 100%|██████████| 4/4 [00:07&lt;00:00,  1.80s/it]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Model=google/gemma-7b-it.  Example #13 with gold: {&#39;no&#39;}
+NO CONTEXT:
+Input tokens: 40   Output tokens: 43
+
+yes
+-----------------------------------
+WITH CONTEXT:
+Input tokens: 367   Output tokens: 375
+
+no
+
+the text does not describe
+-----------------------------------
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>100%|██████████| 1000/1000 [09:39&lt;00:00,  1.73it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Classification Report (context=pubmedqa_all-MiniLM-L6-v2, model=google/gemma-7b-it:
+              precision    recall  f1-score   support
+
+       maybe      0.065     0.018     0.028       110
+          no      0.587     0.846     0.693       338
+         yes      0.797     0.696     0.743       552
+
+    accuracy                          0.672      1000
+   macro avg      0.483     0.520     0.488      1000
+weighted avg      0.645     0.672     0.647      1000
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>100%|██████████| 1000/1000 [09:51&lt;00:00,  1.69it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Classification Report (context=pubmedqa_pubmedbert-base-embeddings, model=google/gemma-7b-it:
+              precision    recall  f1-score   support
+
+       maybe      0.069     0.018     0.029       110
+          no      0.591     0.846     0.696       338
+         yes      0.797     0.703     0.747       552
+
+    accuracy                          0.676      1000
+   macro avg      0.486     0.522     0.491      1000
+weighted avg      0.647     0.676     0.651      1000
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>100%|██████████| 1000/1000 [09:56&lt;00:00,  1.68it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Classification Report (context=pubmedqa_gte-base, model=google/gemma-7b-it:
+              precision    recall  f1-score   support
+
+       maybe      0.067     0.018     0.029       110
+          no      0.594     0.843     0.697       338
+         yes      0.798     0.708     0.750       552
+
+    accuracy                          0.678      1000
+   macro avg      0.486     0.523     0.492      1000
+weighted avg      0.648     0.678     0.653      1000
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>100%|██████████| 1000/1000 [09:17&lt;00:00,  1.79it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Classification Report (context=with-gold, model=google/gemma-7b-it:
+              precision    recall  f1-score   support
+
+       maybe      0.067     0.018     0.029       110
+          no      0.596     0.846     0.699       338
+         yes      0.798     0.708     0.750       552
+
+    accuracy                          0.679      1000
+   macro avg      0.487     0.524     0.493      1000
+weighted avg      0.649     0.679     0.654      1000
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>100%|██████████| 1000/1000 [05:31&lt;00:00,  3.01it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Classification Report (context=no-context, model=google/gemma-7b-it:
+              precision    recall  f1-score   support
+
+       maybe      0.167     0.036     0.060       110
+          no      0.463     0.408     0.434       338
+         yes      0.603     0.741     0.665       552
+
+    accuracy                          0.551      1000
+   macro avg      0.411     0.395     0.386      1000
+weighted avg      0.508     0.551     0.520      1000
+
+CUDA allocated before: 6.02 GB
+CUDA allocated after: 0.01 GB
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Loading checkpoint shards: 100%|██████████| 2/2 [00:06&lt;00:00,  3.02s/it]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Model=meta-llama/Llama-2-7b-chat-hf.  Example #13 with gold: {&#39;no&#39;}
+NO CONTEXT:
+Input tokens: 34   Output tokens: 42
+
+
+introduction:
+
+primary care
+-----------------------------------
+WITH CONTEXT:
+Input tokens: 416   Output tokens: 424
+
+no, the study found that autom
+-----------------------------------
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>100%|██████████| 1000/1000 [10:04&lt;00:00,  1.65it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Classification Report (context=pubmedqa_all-MiniLM-L6-v2, model=meta-llama/Llama-2-7b-chat-hf:
+              precision    recall  f1-score   support
+
+       maybe      0.175     0.227     0.198       110
+          no      0.667     0.675     0.671       338
+         yes      0.775     0.723     0.748       552
+
+    accuracy                          0.652      1000
+   macro avg      0.539     0.542     0.539      1000
+weighted avg      0.672     0.652     0.661      1000
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>100%|██████████| 1000/1000 [10:15&lt;00:00,  1.63it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Classification Report (context=pubmedqa_pubmedbert-base-embeddings, model=meta-llama/Llama-2-7b-chat-hf:
+              precision    recall  f1-score   support
+
+       maybe      0.182     0.236     0.206       110
+          no      0.680     0.678     0.679       338
+         yes      0.775     0.730     0.752       552
+
+    accuracy                          0.658      1000
+   macro avg      0.545     0.548     0.545      1000
+weighted avg      0.677     0.658     0.667      1000
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>100%|██████████| 1000/1000 [10:28&lt;00:00,  1.59it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Classification Report (context=pubmedqa_gte-base, model=meta-llama/Llama-2-7b-chat-hf:
+              precision    recall  f1-score   support
+
+       maybe      0.181     0.236     0.205       110
+          no      0.688     0.672     0.680       338
+         yes      0.776     0.739     0.757       552
+
+    accuracy                          0.661      1000
+   macro avg      0.548     0.549     0.547      1000
+weighted avg      0.681     0.661     0.670      1000
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>100%|██████████| 1000/1000 [10:21&lt;00:00,  1.61it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Classification Report (context=with-gold, model=meta-llama/Llama-2-7b-chat-hf:
+              precision    recall  f1-score   support
+
+       maybe      0.181     0.236     0.205       110
+          no      0.688     0.672     0.680       338
+         yes      0.776     0.739     0.757       552
+
+    accuracy                          0.661      1000
+   macro avg      0.548     0.549     0.547      1000
+weighted avg      0.681     0.661     0.670      1000
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>100%|██████████| 1000/1000 [07:23&lt;00:00,  2.26it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Classification Report (context=no-context, model=meta-llama/Llama-2-7b-chat-hf:
+              precision    recall  f1-score   support
+
+       maybe      0.099     0.464     0.163       110
+          no      0.397     0.080     0.133       338
+         yes      0.571     0.431     0.491       552
+
+    accuracy                          0.316      1000
+   macro avg      0.356     0.325     0.262      1000
+weighted avg      0.460     0.316     0.334      1000
+
+CUDA allocated before: 4.30 GB
+CUDA allocated after: 0.01 GB
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Summary of accuracy scores</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">accuracy</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>google/gemma-7b-it</th>
+      <th>meta-llama/Llama-2-7b-chat-hf</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>pubmedqa_all-MiniLM-L6-v2</th>
+      <td>0.672</td>
+      <td>0.652</td>
+    </tr>
+    <tr>
+      <th>pubmedqa_pubmedbert-base-embeddings</th>
+      <td>0.676</td>
+      <td>0.658</td>
+    </tr>
+    <tr>
+      <th>pubmedqa_gte-base</th>
+      <td>0.678</td>
+      <td>0.661</td>
+    </tr>
+    <tr>
+      <th>with-gold</th>
+      <td>0.679</td>
+      <td>0.661</td>
+    </tr>
+    <tr>
+      <th>no-context</th>
+      <td>0.551</td>
+      <td>0.316</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./."
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+                <footer class="bd-footer-article">
+                  
+<div class="footer-article-items footer-article__inner">
+  
+    <div class="footer-article-item"><!-- Previous / next buttons -->
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="finetune_nli.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Fine-tune LLM for Medical NLI task</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="electra_nli.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Fine-tune Electra encoder transformer model for Medical NLI task</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div></div>
+  
+</div>
+
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#load-pubmedqa-articles-and-questions">Load pubmedqa articles and questions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#load-chroma-client-and-default-embedding-model">Load chroma client and default embedding model</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#create-database-collection-with-default-embedding-model">Create database collection with default embedding model</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#load-data-into-database">Load data into database</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#query-and-retrieve-an-example">Query and retrieve an example</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#create-collections-with-alternate-embedding-models">Create collections with alternate embedding models</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#can-be-any-sentence-transformer-model">Can be any sentence-transformer model</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#or-custom-embedding-function">Or custom embedding function</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#compute-retrievel-accuracy-of-the-embeddings-models">Compute retrievel accuracy of the embeddings models</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#t-sne-plot-of-embeddings">t-SNE plot of embeddings</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#helpers-to-prepare-prompt-and-generate-chat">Helpers to prepare prompt and generate chat</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#to-generate-response">To generate response</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#to-create-prompt">To create prompt</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#evaluate-models">Evaluate models</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Terence Lim
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  <p class="copyright">
+    
+      © Copyright 2024.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="_static/scripts/bootstrap.js?digest=e353d410970836974a52"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

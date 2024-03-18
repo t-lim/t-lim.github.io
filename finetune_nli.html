@@ -1,0 +1,1148 @@
+
+
+<!DOCTYPE html>
+
+
+<html lang="en" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>Fine-tune LLM for Medical NLI task &#8212; Fine-Tuning and Retrieval-Augmentation: Teaching LLMs new tricks</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=e353d410970836974a52" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=e353d410970836974a52" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=e353d410970836974a52" rel="stylesheet" />
+
+  
+  <link href="_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=e353d410970836974a52" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" href="_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=e353d410970836974a52" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52" />
+
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/clipboard.min.js"></script>
+    <script src="_static/copybutton.js"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="_static/togglebutton.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="_static/design-tabs.js"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
+const thebe_selector = ".thebe,.cell"
+const thebe_selector_input = "pre"
+const thebe_selector_output = ".output, .cell_output"
+</script>
+    <script async="async" src="_static/sphinx-thebe.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'finetune_nli';</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Retrieval-Augmented Generation for Medical Question-Answering" href="rag_pubmedqa.html" />
+    <link rel="prev" title="SELF-LEARNING TUTORIAL" href="README.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+  
+
+<a class="navbar-brand logo" href="README.html">
+  
+  
+  
+  
+  
+    <p class="title logo__title">Fine-Tuning and Retrieval-Augmentation: Teaching LLMs new tricks</p>
+  
+</a></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="README.html">
+                    SELF-LEARNING TUTORIAL
+                </a>
+            </li>
+        </ul>
+        <ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Fine-tune LLM for Medical NLI task</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rag_pubmedqa.html">Retrieval-Augmented Generation for Medical Question-Answering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="electra_nli.html">Fine-tune Electra encoder transformer model for Medical NLI task</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/t-lim/ai-healthcare.git" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/t-lim/ai-healthcare.git/issues/new?title=Issue%20on%20page%20%2Ffinetune_nli.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="_sources/finetune_nli.ipynb" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.ipynb</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+<script>
+document.write(`
+  <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+  </button>
+`);
+</script>
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+  </button>
+`);
+</script>
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Fine-tune LLM for Medical NLI task</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#load-model-from-hf-hub-or-checkpoint">Load model from HF hub or checkpoint</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#set-training-arguments">Set training arguments</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#get-mednli-dataset">Get mednli dataset</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#get-quantized-pre-trained-model">Get quantized pre-trained model</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#helpers-for-evaluating-model-predictions">Helpers for evaluating model predictions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#train-model">Train model</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#generates-responses-and-evaluate-model">Generates responses and evaluate model</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="fine-tune-llm-for-medical-nli-task">
+<h1>Fine-tune LLM for Medical NLI task<a class="headerlink" href="#fine-tune-llm-for-medical-nli-task" title="Permalink to this heading">#</a></h1>
+<p>This tutorial demonstrates how to fine-tune open-source Large Language Models, such as Google’s 2024 gemma 2B- and 7B-parameter and Meta’s 2023 Llama-2 7B- and 13B-parameter models, for medical NLP tasks such as NLI (natural language inference).  To load, train and run inference on consumer-grade hardware*, “quantization” and “low rank adaptation” methods are explained and used. The final results using the MedNLI benchmark dataset suggest that gemma-7b-it performed best, slightly outperforming Llama-2-13b.</p>
+<p>*this notebook was run on an over-2-year-old laptop with a RTX-3080 16GB GPU</p>
+<p>References:</p>
+<ul class="simple">
+<li><p><a class="github reference external" href="https://github.com/jgc128/mednli">jgc128/mednli</a></p></li>
+<li><p><a class="reference external" href="https://pytorch.org/blog/finetune-llms/">https://pytorch.org/blog/finetune-llms/</a></p></li>
+<li><p><a class="github reference external" href="https://github.com/TimDettmers/bitsandbytes">TimDettmers/bitsandbytes</a></p></li>
+<li><p><a class="github reference external" href="https://github.com/huggingface/peft">huggingface/peft</a></p></li>
+<li><p><a class="reference external" href="https://www.kaggle.com/code/lucamassaron/fine-tune-gemma-7b-it-for-sentiment-analysis">https://www.kaggle.com/code/lucamassaron/fine-tune-gemma-7b-it-for-sentiment-analysis</a></p></li>
+</ul>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">gc</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">datasets</span> <span class="kn">import</span> <span class="n">Dataset</span>
+<span class="kn">from</span> <span class="nn">transformers</span> <span class="kn">import</span> <span class="p">(</span><span class="n">AutoModelForCausalLM</span><span class="p">,</span>
+                          <span class="n">AutoTokenizer</span><span class="p">,</span>
+                          <span class="n">TrainingArguments</span><span class="p">,</span>
+                          <span class="n">BitsAndBytesConfig</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">peft</span> <span class="kn">import</span> <span class="n">LoraConfig</span><span class="p">,</span> <span class="n">AutoPeftModelForCausalLM</span>
+<span class="kn">from</span> <span class="nn">trl</span> <span class="kn">import</span> <span class="n">SFTTrainer</span>
+<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">accuracy_score</span><span class="p">,</span> <span class="n">classification_report</span><span class="p">,</span> <span class="n">confusion_matrix</span>
+<span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">tqdm</span>
+<span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;cuda:0&quot;</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;pytorch version: </span><span class="si">{</span><span class="n">torch</span><span class="o">.</span><span class="n">__version__</span><span class="si">}</span><span class="s2">, device: </span><span class="si">{</span><span class="n">device</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>pytorch version: 2.2.1+cu121, device: cuda:0
+</pre></div>
+</div>
+</div>
+</div>
+<section id="load-model-from-hf-hub-or-checkpoint">
+<h2>Load model from HF hub or checkpoint<a class="headerlink" href="#load-model-from-hf-hub-or-checkpoint" title="Permalink to this heading">#</a></h2>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># pre-trained LLM to use</span>
+<span class="n">model_id</span> <span class="o">=</span> <span class="s2">&quot;meta-llama/Llama-2-7b-chat-hf&quot;</span>
+<span class="n">model_id</span> <span class="o">=</span> <span class="s2">&quot;meta-llama/Llama-2-13b-chat-hf&quot;</span>
+<span class="n">model_id</span> <span class="o">=</span> <span class="s2">&quot;google/gemma-2b-it&quot;</span>
+<span class="n">model_id</span> <span class="o">=</span> <span class="s2">&quot;google/gemma-7b-it&quot;</span>
+<span class="n">output_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;models&#39;</span><span class="p">,</span> <span class="n">model_id</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># select to load model from HF hub, or previously checkpoint-saved folder</span>
+<span class="n">from_checkpoint</span> <span class="o">=</span> <span class="n">model_id</span>
+<span class="c1">#from_checkpoint = output_dir</span>
+<span class="c1">#from_checkpoint = os.path.join(output_dir, &#39;checkpoint-474&#39;)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="set-training-arguments">
+<h2>Set training arguments<a class="headerlink" href="#set-training-arguments" title="Permalink to this heading">#</a></h2>
+<p><a class="reference external" href="https://huggingface.co/docs/transformers/main_classes/trainer#transformers.TrainingArguments">https://huggingface.co/docs/transformers/main_classes/trainer#transformers.TrainingArguments</a></p>
+<ul class="simple">
+<li><p>optim — The optimizer to use: adamw_hf, adamw_torch, adamw_torch_fused, adamw_apex_fused, adamw_anyprecision or adafactor.</p></li>
+<li><p>gradient_accumulation_steps — Number of updates steps to accumulate the gradients for, before performing a backward/update pass.</p></li>
+<li><p>lr_scheduler_type — The scheduler type to use.</p></li>
+<li><p>learning_rate — The initial learning rate.</p></li>
+<li><p>weight_decay — The weight decay to apply (if not zero) to all layers except all bias and LayerNorm weights.</p></li>
+<li><p>max_grad_norm — Maximum gradient norm (for gradient clipping).</p></li>
+<li><p>fp16 — Whether to use fp16 16-bit (mixed) precision training instead of 32-bit training.</p></li>
+</ul>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># whether to train and/or evaluate</span>
+<span class="n">do_train</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">do_eval</span> <span class="o">=</span> <span class="kc">True</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># define arguments for trainer</span>
+<span class="n">training_args</span> <span class="o">=</span> <span class="n">TrainingArguments</span><span class="p">(</span>
+    <span class="n">output_dir</span><span class="o">=</span><span class="n">output_dir</span><span class="p">,</span>
+    <span class="n">optim</span><span class="o">=</span><span class="s2">&quot;paged_adamw_32bit&quot;</span><span class="p">,</span>
+    <span class="n">lr_scheduler_type</span><span class="o">=</span><span class="s2">&quot;cosine&quot;</span><span class="p">,</span>
+    <span class="n">learning_rate</span><span class="o">=</span><span class="mf">2e-4</span><span class="p">,</span>
+    <span class="n">weight_decay</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span>
+    <span class="n">max_grad_norm</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span>
+    <span class="n">warmup_ratio</span><span class="o">=</span><span class="mf">0.03</span><span class="p">,</span>
+    <span class="n">gradient_accumulation_steps</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+    <span class="n">fp16</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>   <span class="c1"># use mixed precision floats</span>
+
+    <span class="n">num_train_epochs</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span>  <span class="c1">#1.0,</span>
+    <span class="n">per_device_train_batch_size</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">evaluation_strategy</span><span class="o">=</span><span class="s1">&#39;steps&#39;</span><span class="p">,</span>
+    <span class="n">save_steps</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span>                  <span class="c1"># checkpoint interval, -1 for none</span>
+    <span class="n">logging_steps</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span>               <span class="c1"># logging interval, -1 for none</span>
+    <span class="n">eval_steps</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span>                  <span class="c1"># evaluation interval, -1 for non</span>
+    <span class="n">eval_accumulation_steps</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>       <span class="c1"># 1 for less memory but slower</span>
+    <span class="n">prediction_loss_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>       <span class="c1"># False for full evaluation</span>
+    <span class="n">gradient_checkpointing</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">report_to</span><span class="o">=</span><span class="s2">&quot;tensorboard&quot;</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="get-mednli-dataset">
+<h2>Get mednli dataset<a class="headerlink" href="#get-mednli-dataset" title="Permalink to this heading">#</a></h2>
+<p>MedNLI: A dataset annotated by doctors, performing a natural language inference task (NLI). The source of premise sentences, was the MIMIC-III v1.3 (Johnson et al., 2016) database, which 2,078,705 clinical notes written by healthcare professionals in English.  The hypothesis sentences were generated by clinicians. They were asked to write three sentences (hypotheses): 1) A clearly true statement, 2) A clearly false statement, and 3) A statement that might be true or false. This procedure produces three training pairs of sentences for each initial premise with three different labels: entailment, contradiction, and neutral.</p>
+<p>Romanov, Alexey and Shivade, Chaitanya, Lessons from Natural Language Inference in the Clinical Domain, 2018. <a class="reference external" href="http://arxiv.org/abs/1808.06752">http://arxiv.org/abs/1808.06752</a>,</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># helper to read jsonl</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="k">def</span> <span class="nf">read_jsonl</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">max_samples</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;helper to read jsonl files as pandas dataframe&quot;&quot;&quot;</span>
+    <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span>
+    <span class="n">line_dicts</span> <span class="o">=</span> <span class="p">[</span><span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">line</span><span class="p">)</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">]</span>
+    <span class="n">max_samples</span> <span class="o">=</span> <span class="n">max_samples</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">line_dicts</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">line_dicts</span><span class="p">)</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:</span><span class="n">max_samples</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># read in train, dev and test sets</span>
+<span class="n">X_train</span> <span class="o">=</span> <span class="n">read_jsonl</span><span class="p">(</span><span class="s1">&#39;mednli/mli_train_v1.jsonl&#39;</span><span class="p">)</span>
+<span class="n">y_train</span> <span class="o">=</span> <span class="n">X_train</span><span class="p">[</span><span class="s1">&#39;gold_label&#39;</span><span class="p">]</span>
+<span class="n">X_dev</span> <span class="o">=</span> <span class="n">read_jsonl</span><span class="p">(</span><span class="s1">&#39;mednli/mli_dev_v1.jsonl&#39;</span><span class="p">)</span>
+<span class="n">y_dev</span> <span class="o">=</span> <span class="n">X_dev</span><span class="p">[</span><span class="s1">&#39;gold_label&#39;</span><span class="p">]</span>
+<span class="n">X_test</span> <span class="o">=</span> <span class="n">read_jsonl</span><span class="p">(</span><span class="s1">&#39;mednli/mli_test_v1.jsonl&#39;</span><span class="p">)</span>
+<span class="n">y_test</span> <span class="o">=</span> <span class="n">X_test</span><span class="p">[</span><span class="s1">&#39;gold_label&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Show premise, hypothesis and label for dev examples</span>
+<span class="n">X_dev</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:</span><span class="mi">6</span><span class="p">][[</span><span class="s1">&#39;sentence1&#39;</span><span class="p">,</span> <span class="s1">&#39;sentence2&#39;</span><span class="p">,</span> <span class="s1">&#39;gold_label&#39;</span><span class="p">]]</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>sentence1</th>
+      <th>sentence2</th>
+      <th>gold_label</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>No history of blood clots or DVTs, has never h...</td>
+      <td>Patient has angina</td>
+      <td>entailment</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>No history of blood clots or DVTs, has never h...</td>
+      <td>Patient has had multiple PEs</td>
+      <td>contradiction</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>No history of blood clots or DVTs, has never h...</td>
+      <td>Patient has CAD</td>
+      <td>neutral</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>Over the past week PTA he has been more somnol...</td>
+      <td>He has been less alert over the past week</td>
+      <td>entailment</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>Over the past week PTA he has been more somnol...</td>
+      <td>Over the past week he has been alert and orie...</td>
+      <td>contradiction</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>Over the past week PTA he has been more somnol...</td>
+      <td>He is disorientated and complains of weakness</td>
+      <td>neutral</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># format premise and hypothesis as chat prompt</span>
+<span class="k">def</span> <span class="nf">as_test_prompt</span><span class="p">(</span><span class="n">ex</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;prompt for response to test example&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">            Use the following context to determine if the factuality of the</span>
+<span class="s2">            statement enclosed in square brackets at the end is entailment,</span>
+<span class="s2">            neutral, or contradiction, and return the answer in 1 word as</span>
+<span class="s2">            &quot;entailment&quot; or &quot;neutral&quot; or &quot;negative&quot;:</span>
+
+<span class="s2">            </span><span class="si">{</span><span class="n">ex</span><span class="p">[</span><span class="s1">&#39;sentence1&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"></span>
+
+<span class="s2">            [</span><span class="si">{</span><span class="n">ex</span><span class="p">[</span><span class="s1">&#39;sentence2&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">]</span>
+
+<span class="s2">            Answer:</span>
+<span class="s2">            &quot;&quot;&quot;</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+
+<span class="c1"># format premise and hypothesis with gold label as training example</span>
+<span class="k">def</span> <span class="nf">as_prompt</span><span class="p">(</span><span class="n">ex</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;training example&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">as_test_prompt</span><span class="p">(</span><span class="n">ex</span><span class="p">)</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="n">ex</span><span class="p">[</span><span class="s1">&#39;gold_label&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># reformat all examples as prompts</span>
+<span class="n">X_train</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">X_train</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">as_prompt</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;prompt&quot;</span><span class="p">])</span>
+<span class="n">train_data</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">from_pandas</span><span class="p">(</span><span class="n">X_train</span><span class="p">)</span>
+<span class="n">X_dev</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">X_dev</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">as_prompt</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;prompt&quot;</span><span class="p">])</span>
+<span class="n">dev_data</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">from_pandas</span><span class="p">(</span><span class="n">X_dev</span><span class="p">)</span>
+<span class="n">X_test</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">X_test</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">as_test_prompt</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;prompt&quot;</span><span class="p">])</span>
+<span class="n">test_data</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">from_pandas</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="get-quantized-pre-trained-model">
+<h2>Get quantized pre-trained model<a class="headerlink" href="#get-quantized-pre-trained-model" title="Permalink to this heading">#</a></h2>
+<p><a class="reference external" href="https://huggingface.co/docs/bitsandbytes/main/en/index">https://huggingface.co/docs/bitsandbytes/main/en/index</a></p>
+<p>bitsandbytes enables accessible large language models via k-bit quantization for PyTorch. 8-bit quantization enables large language model inference with only half the required memory and without any performance degradation. This method is based on vector-wise quantization to quantize most features to 8-bits and separately treating outliers with 16-bit matrix multiplication. 4-bit quantization enables large language model training with several memory-saving techniques that don’t compromise performance. This method quantizes a model to 4-bits and inserts a small set of trainable low-rank adaptation (LoRA) weights to allow training.</p>
+<ul class="simple">
+<li><p>quantization: a technique to reduce the computational and memory costs of running inference by representing the weights and activations with low-precision data types like 8-bit integer (int8) instead of the usual 32-bit floating point (float32). Reducing the number of bits means the resulting model requires less memory storage, consumes less energy (in theory), and operations like matrix multiplication can be performed much faster with integer arithmetic. It also allows to run models on embedded devices, which sometimes only support integer data types.</p></li>
+<li><p>LLM.int8(): a quantization method that doesn’t degrade performance which makes large model inference more accessible. The key is to extract the outliers from the inputs and weights and multiply them in 16-bit. All other values are multiplied in 8-bit and quantized to Int8 before being dequantized back to 16-bits. The outputs from the 16-bit and 8-bit multiplication are combined to produce the final output.</p></li>
+<li><p>nf4: a quantization data type where each bin has equal area under a standard normal distribution N(0, 1) that is normalized into the range [-1, 1].</p></li>
+</ul>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load model from HF hub or local folder</span>
+<span class="n">compute_dtype</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">torch</span><span class="p">,</span> <span class="s2">&quot;float16&quot;</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">do_train</span><span class="p">:</span>   <span class="c1"># Load and quantize pre-trained model to start fine-tune</span>
+    <span class="n">bnb_config</span> <span class="o">=</span> <span class="n">BitsAndBytesConfig</span><span class="p">(</span>
+        <span class="n">load_in_4bit</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">bnb_4bit_use_double_quant</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">bnb_4bit_quant_type</span><span class="o">=</span><span class="s2">&quot;nf4&quot;</span><span class="p">,</span>
+        <span class="n">bnb_4bit_compute_dtype</span><span class="o">=</span><span class="n">compute_dtype</span>
+    <span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">AutoModelForCausalLM</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span>
+        <span class="n">from_checkpoint</span><span class="p">,</span>
+        <span class="n">device_map</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>  <span class="c1"># &quot;auto&quot; may be slower because offload to cpu</span>
+        <span class="n">quantization_config</span><span class="o">=</span><span class="n">bnb_config</span>
+    <span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>    <span class="c1"># Load previously checkpoint-saved model to continue fine-tune or evaluate</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">AutoPeftModelForCausalLM</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span>
+        <span class="n">from_checkpoint</span><span class="p">,</span>
+        <span class="n">torch_dtype</span><span class="o">=</span><span class="n">compute_dtype</span><span class="p">,</span>
+        <span class="n">return_dict</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">low_cpu_mem_usage</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">device_map</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>  <span class="c1"># &quot;auto&quot; may be slower because offload to cpu</span>
+    <span class="p">)</span>
+
+<span class="c1"># Load tokenizer</span>
+<span class="n">tokenizer</span> <span class="o">=</span> <span class="n">AutoTokenizer</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">model_id</span><span class="p">)</span>
+
+<span class="c1"># Fix missing pad_token if error</span>
+<span class="k">if</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">pad_token</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">tokenizer</span><span class="o">.</span><span class="n">add_special_tokens</span><span class="p">({</span><span class="s1">&#39;pad_token&#39;</span><span class="p">:</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">eos_token</span><span class="p">})</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">resize_token_embeddings</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tokenizer</span><span class="p">))</span>
+<span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">use_cache</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">pretraining_tp</span> <span class="o">=</span> <span class="mi">1</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Loading checkpoint shards: 100%|██████████| 4/4 [00:12&lt;00:00,  3.06s/it]
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;CUDA: </span><span class="si">{</span><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">memory_allocated</span><span class="p">()</span><span class="o">/</span><span class="mf">1e9</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> GB&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>CUDA: 6.01 GB
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="helpers-for-evaluating-model-predictions">
+<h2>Helpers for evaluating model predictions<a class="headerlink" href="#helpers-for-evaluating-model-predictions" title="Permalink to this heading">#</a></h2>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">tokenizer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Generate model predictions on test set&quot;&quot;&quot;</span>
+    <span class="n">y_pred</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">X_test</span><span class="p">))):</span>
+        <span class="n">prompt</span> <span class="o">=</span> <span class="n">X_test</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;prompt&quot;</span><span class="p">]</span>
+        <span class="n">input_ids</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="p">(</span><span class="n">prompt</span><span class="p">,</span> <span class="n">return_tensors</span><span class="o">=</span><span class="s2">&quot;pt&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>
+        <span class="n">outputs</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="o">**</span><span class="n">input_ids</span><span class="p">,</span>
+                                 <span class="n">max_new_tokens</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>  <span class="c1"># 8</span>
+                                 <span class="n">do_sample</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>   <span class="c1"># True</span>
+                                 <span class="n">temperature</span><span class="o">=</span><span class="mf">0.00</span><span class="p">,</span>  <span class="c1"># 0.01</span>
+        <span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">outputs</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="nb">len</span><span class="p">(</span><span class="n">input_ids</span><span class="p">[</span><span class="mi">0</span><span class="p">]):])</span>   
+        <span class="n">answer</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="c1"># result.split(&quot;=&quot;)[-1].lower()</span>
+        <span class="k">if</span> <span class="s2">&quot;entailment&quot;</span> <span class="ow">in</span> <span class="n">answer</span><span class="p">:</span>
+            <span class="n">y_pred</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;entailment&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="s2">&quot;contradiction&quot;</span> <span class="ow">in</span> <span class="n">answer</span><span class="p">:</span>
+            <span class="n">y_pred</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;contradiction&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">y_pred</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;neutral&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">y_pred</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Evaluate accuracy and confusion matrix of model predictions&quot;&quot;&quot;</span>
+    <span class="n">y_true</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">y_true</span><span class="p">)</span>
+    <span class="n">y_pred</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">y_pred</span><span class="p">)</span>
+    
+    <span class="c1"># Calculate accuracy</span>
+    <span class="n">accuracy</span> <span class="o">=</span> <span class="n">accuracy_score</span><span class="p">(</span><span class="n">y_true</span><span class="o">=</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="o">=</span><span class="n">y_pred</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Accuracy: </span><span class="si">{</span><span class="n">accuracy</span><span class="si">:</span><span class="s1">.3f</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                
+    <span class="c1"># Generate classification report</span>
+    <span class="n">class_report</span> <span class="o">=</span> <span class="n">classification_report</span><span class="p">(</span><span class="n">y_true</span><span class="o">=</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="o">=</span><span class="n">y_pred</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Classification Report:&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">class_report</span><span class="p">)</span>
+    
+    <span class="c1"># Generate confusion matrix</span>
+    <span class="n">conf_matrix</span> <span class="o">=</span> <span class="n">confusion_matrix</span><span class="p">(</span><span class="n">y_true</span><span class="o">=</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="o">=</span><span class="n">y_pred</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Confusion Matrix:&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">conf_matrix</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">accuracy</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Evaluate pre-trained that has *NOT* been tuned for downstream NLI task</span>
+<span class="n">y_pred</span> <span class="o">=</span> <span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">tokenizer</span><span class="p">)</span>
+<span class="n">evaluate</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">prompt</span> <span class="o">=</span> <span class="n">X_test</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">42</span><span class="p">][</span><span class="s2">&quot;prompt&quot;</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Prompt:&#39;</span><span class="p">,</span> <span class="n">prompt</span><span class="p">)</span>
+
+<span class="n">input_ids</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="p">(</span><span class="n">prompt</span><span class="p">,</span> <span class="n">return_tensors</span><span class="o">=</span><span class="s2">&quot;pt&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>
+<span class="n">outputs</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="o">**</span><span class="n">input_ids</span><span class="p">,</span>
+                         <span class="n">max_new_tokens</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+                         <span class="n">do_sample</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                         <span class="n">temperature</span><span class="o">=</span><span class="mf">0.00</span>
+                         <span class="p">)</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">outputs</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="nb">len</span><span class="p">(</span><span class="n">input_ids</span><span class="p">[</span><span class="mi">0</span><span class="p">]):])</span>
+<span class="n">answer</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Answer:&#39;</span><span class="p">,</span> <span class="n">answer</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>100%|██████████| 1422/1422 [06:05&lt;00:00,  3.89it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Accuracy: 0.333
+
+Classification Report:
+               precision    recall  f1-score   support
+
+contradiction       0.00      0.00      0.00       474
+   entailment       0.00      0.00      0.00       474
+      neutral       0.33      1.00      0.50       474
+
+     accuracy                           0.33      1422
+    macro avg       0.11      0.33      0.17      1422
+ weighted avg       0.11      0.33      0.17      1422
+
+
+Confusion Matrix:
+[[  0   0 474]
+ [  0   0 474]
+ [  0   0 474]]
+Prompt: Use the following context to determine if the factuality of the
+            statement enclosed in square brackets at the end is entailment,
+            neutral, or contradiction, and return the answer in 1 word as
+            &quot;entailment&quot; or &quot;neutral&quot; or &quot;negative&quot;:
+
+            He could think of what he wanted to say but was having trouble getting the words out.
+
+            [ The patient is having trouble speaking. ]
+
+            Answer:
+Answer: 
+
+the factu
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="train-model">
+<h2>Train model<a class="headerlink" href="#train-model" title="Permalink to this heading">#</a></h2>
+<ul class="simple">
+<li><p>PEFT (Parameter-Efficient Fine-Tuning) methods enable efficient adaptation of large pretrained models to various downstream applications by only fine-tuning a small number of (extra) model parameters instead of all the model’s parameters. PEFT can save storage by avoiding full finetuning of models on each of downstream task or dataset. One of the main benefits of using PEFT is the huge savings in compute and storage.</p></li>
+<li><p>LoRA (Low-Rank Adaptation) works by attaching extra trainable parameters into a model and decomposing a large weight matrix into two smaller, low-rank matrices (called update matrices). These new matrices can be trained to adapt to the new data while keeping the overall number of changes low. The original weight matrix remains frozen and doesn’t receive any further adjustments. To produce the final results, both the original and the adapted weights are combined.</p></li>
+<li><p>QLoRA is a 4-bit quantization method that enables large language model training with several memory-saving techniques that don’t compromise performance. This method quantizes a model to 4-bits and inserts a small set of trainable low-rank adaptation (LoRA) weights to allow training.</p></li>
+</ul>
+<p><a class="reference external" href="https://pytorch.org/blog/finetune-llms/">https://pytorch.org/blog/finetune-llms/</a>
+<a class="github reference external" href="https://github.com/huggingface/peft">huggingface/peft</a>
+<a class="reference external" href="https://huggingface.co/docs/bitsandbytes/main/en/index">https://huggingface.co/docs/bitsandbytes/main/en/index</a></p>
+<p>Prepare a model for training with a PEFT method such as LoRA by wrapping the base model with PEFT configuration</p>
+<ul class="simple">
+<li><p>r — attention dimension (the “rank”)</p></li>
+<li><p>lora_alpha — scaling factor for the weight matrices, a higher alpha assigns more weight to the LoRA activations</p></li>
+<li><p>lora_dropout — The dropout probability for Lora layers.</p></li>
+</ul>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Set config for PEFT</span>
+<span class="n">peft_config</span> <span class="o">=</span> <span class="n">LoraConfig</span><span class="p">(</span>
+    <span class="n">lora_alpha</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span>
+    <span class="n">lora_dropout</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+    <span class="n">r</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span>
+    <span class="n">bias</span><span class="o">=</span><span class="s2">&quot;none&quot;</span><span class="p">,</span>
+    <span class="n">task_type</span><span class="o">=</span><span class="s2">&quot;CAUSAL_LM&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Set config for SFT Trainer</span>
+<span class="n">trainer</span> <span class="o">=</span> <span class="n">SFTTrainer</span><span class="p">(</span>
+    <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+    <span class="n">train_dataset</span><span class="o">=</span><span class="n">train_data</span><span class="p">,</span>
+    <span class="n">eval_dataset</span><span class="o">=</span><span class="n">dev_data</span><span class="p">,</span>
+    <span class="n">peft_config</span><span class="o">=</span><span class="n">peft_config</span><span class="p">,</span>
+    <span class="n">dataset_text_field</span><span class="o">=</span><span class="s2">&quot;prompt&quot;</span><span class="p">,</span>
+    <span class="n">tokenizer</span><span class="o">=</span><span class="n">tokenizer</span><span class="p">,</span>
+    <span class="n">args</span><span class="o">=</span><span class="n">training_args</span><span class="p">,</span>
+    <span class="n">packing</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">max_seq_length</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Map: 100%|██████████| 11232/11232 [00:00&lt;00:00, 17323.32 examples/s]
+Map: 100%|██████████| 1395/1395 [00:00&lt;00:00, 23797.54 examples/s]
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">do_train</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>    <span class="c1"># reclaim memory before training</span>
+        <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">empty_cache</span><span class="p">()</span>
+    <span class="n">gc</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+    <span class="n">training_stats</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+
+    <span class="c1"># Save trained model</span>
+    <span class="c1">#trainer.model.save_pretrained(output_dir)</span>
+    <span class="n">trainer</span><span class="o">.</span><span class="n">save_model</span><span class="p">(</span><span class="n">output_dir</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> 20%|██        | 422/2106 [45:33&lt;3:00:58,  6.45s/it]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>{&#39;loss&#39;: 1.8024, &#39;grad_norm&#39;: 0.32632938027381897, &#39;learning_rate&#39;: 0.00018521172305285236, &#39;epoch&#39;: 0.6}
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                                                    
+ 20%|██        | 422/2106 [47:59&lt;3:00:58,  6.45s/it]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>{&#39;eval_loss&#39;: 0.7946441173553467, &#39;eval_runtime&#39;: 145.5527, &#39;eval_samples_per_second&#39;: 9.584, &#39;eval_steps_per_second&#39;: 1.202, &#39;epoch&#39;: 0.6}
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> 40%|████      | 844/2106 [1:33:14&lt;2:16:52,  6.51s/it]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>{&#39;loss&#39;: 0.6638, &#39;grad_norm&#39;: 0.3769872784614563, &#39;learning_rate&#39;: 0.00013623384610073693, &#39;epoch&#39;: 1.2}
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                                                      
+ 40%|████      | 844/2106 [1:35:36&lt;2:16:52,  6.51s/it]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>{&#39;eval_loss&#39;: 0.7909778952598572, &#39;eval_runtime&#39;: 141.786, &#39;eval_samples_per_second&#39;: 9.839, &#39;eval_steps_per_second&#39;: 1.234, &#39;epoch&#39;: 1.2}
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> 60%|██████    | 1266/2106 [2:20:39&lt;1:30:41,  6.48s/it]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>{&#39;loss&#39;: 0.5796, &#39;grad_norm&#39;: 0.4613594710826874, &#39;learning_rate&#39;: 7.25118606258684e-05, &#39;epoch&#39;: 1.8}
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                                                       
+ 60%|██████    | 1266/2106 [2:23:01&lt;1:30:41,  6.48s/it]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>{&#39;eval_loss&#39;: 0.8163220882415771, &#39;eval_runtime&#39;: 141.8245, &#39;eval_samples_per_second&#39;: 9.836, &#39;eval_steps_per_second&#39;: 1.234, &#39;epoch&#39;: 1.8}
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> 80%|████████  | 1688/2106 [3:08:42&lt;45:12,  6.49s/it]   
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>{&#39;loss&#39;: 0.4816, &#39;grad_norm&#39;: 0.5449468493461609, &#39;learning_rate&#39;: 1.9975221274455323e-05, &#39;epoch&#39;: 2.4}
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                                                     
+ 80%|████████  | 1688/2106 [3:11:07&lt;45:12,  6.49s/it]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>{&#39;eval_loss&#39;: 0.8947425484657288, &#39;eval_runtime&#39;: 145.2768, &#39;eval_samples_per_second&#39;: 9.602, &#39;eval_steps_per_second&#39;: 1.205, &#39;epoch&#39;: 2.4}
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>100%|██████████| 2106/2106 [3:55:53&lt;00:00,  6.72s/it]  
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>{&#39;train_runtime&#39;: 14153.7833, &#39;train_samples_per_second&#39;: 2.381, &#39;train_steps_per_second&#39;: 0.149, &#39;train_loss&#39;: 0.7942605955987914, &#39;epoch&#39;: 3.0}
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># pd.Series(training_stats.metrics)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;CUDA: </span><span class="si">{</span><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">memory_allocated</span><span class="p">()</span><span class="o">/</span><span class="mf">1e9</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> GB&quot;</span><span class="p">)</span>
+<span class="c1"># !nvidia-smi</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>CUDA: 7.90 GB
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="generates-responses-and-evaluate-model">
+<h2>Generates responses and evaluate model<a class="headerlink" href="#generates-responses-and-evaluate-model" title="Permalink to this heading">#</a></h2>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">do_eval</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>    <span class="c1"># reclaim memory</span>
+        <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">empty_cache</span><span class="p">()</span>
+    <span class="n">gc</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+    
+    <span class="n">y_pred</span> <span class="o">=</span> <span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span> <span class="n">trainer</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">tokenizer</span><span class="p">)</span>
+    <span class="n">evaluate</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">evaluation</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;prompt&#39;</span><span class="p">:</span> <span class="n">X_test</span><span class="p">[</span><span class="s2">&quot;prompt&quot;</span><span class="p">],</span>
+                               <span class="s1">&#39;y_test&#39;</span><span class="p">:</span> <span class="n">y_test</span><span class="p">,</span>
+                               <span class="s1">&#39;y_pred&#39;</span><span class="p">:</span> <span class="n">y_pred</span><span class="p">})</span>
+    <span class="n">eval_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="s1">&#39;logs&#39;</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">eval_dir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">evaluation</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">eval_dir</span><span class="p">,</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">-%H%M&quot;</span><span class="p">)),</span>
+        <span class="n">index</span><span class="o">=</span><span class="kc">False</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>  0%|          | 0/1422 [00:00&lt;?, ?it/s]`use_cache=True` is incompatible with gradient checkpointing. Setting `use_cache=False`.
+100%|██████████| 1422/1422 [18:15&lt;00:00,  1.30it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Accuracy: 0.878
+
+Classification Report:
+               precision    recall  f1-score   support
+
+contradiction       0.92      0.94      0.93       474
+   entailment       0.86      0.87      0.86       474
+      neutral       0.85      0.82      0.84       474
+
+     accuracy                           0.88      1422
+    macro avg       0.88      0.88      0.88      1422
+ weighted avg       0.88      0.88      0.88      1422
+
+
+Confusion Matrix:
+[[446   8  20]
+ [ 15 412  47]
+ [ 23  60 391]]
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./."
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+                <footer class="bd-footer-article">
+                  
+<div class="footer-article-items footer-article__inner">
+  
+    <div class="footer-article-item"><!-- Previous / next buttons -->
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="README.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">SELF-LEARNING TUTORIAL</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="rag_pubmedqa.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Retrieval-Augmented Generation for Medical Question-Answering</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div></div>
+  
+</div>
+
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#load-model-from-hf-hub-or-checkpoint">Load model from HF hub or checkpoint</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#set-training-arguments">Set training arguments</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#get-mednli-dataset">Get mednli dataset</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#get-quantized-pre-trained-model">Get quantized pre-trained model</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#helpers-for-evaluating-model-predictions">Helpers for evaluating model predictions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#train-model">Train model</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#generates-responses-and-evaluate-model">Generates responses and evaluate model</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Terence Lim
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  <p class="copyright">
+    
+      © Copyright 2024.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="_static/scripts/bootstrap.js?digest=e353d410970836974a52"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
