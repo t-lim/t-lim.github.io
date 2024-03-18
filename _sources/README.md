@@ -37,7 +37,7 @@ mobility are critical concerns.
 You can access the presentation slides, as well as the python code,
 from the links below:
 
-- [Slides (pdf format)](https://t-lim.github.io/tutorial.pdf) [(ppt format)](https://t-lim.github.io/tutorial.pptx)
+- [Tutorial Slides (pdf format)](https://t-lim.github.io/tutorial.pdf) [(ppt format)](https://t-lim.github.io/tutorial.pptx)
 - [finetune_nli.ipynb](https://t-lim.github.io/_sources/finetune_nli.ipynb) - Fine-tune for Medical natural language inference (NLI) task
 - [rag_pubmedqa.ipynb](https://t-lim.github.io/_sources/rag_pubmedqa.ipynb) - Retrieval-Augmented Generation (RAG) for Medical question-answering (QA) task
 - [electra_nli.ipynb](https://t-lim.github.io/_sources/electra_nli.ipynb) - Appendix: Introduction to using Hugging Face transformers module
