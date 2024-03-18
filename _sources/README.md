@@ -34,9 +34,12 @@ mobility are critical concerns.
 
 ## Downloads
 
-- [Slides](https://t-lim.github.io/tutorial.pdf)
+You can access the presentation slides, as well as the python code,
+from the links below:
+
+- [Slides (pdf format)](https://t-lim.github.io/tutorial.pdf) [(ppt format)](https://t-lim.github.io/tutorial.pptx)
 - [electra_nli.ipynb](https://t-lim.github.io/_sources/electra_nli.ipynb)
 - [finetune_nli.ipynb](https://t-lim.github.io/_sources/finetune_nli.ipynb)
 - [rag_pubmedqa.ipynb](https://t-lim.github.io/_sources/rag_pubmedqa.ipynb)
 
-The notebooks can also be selected from the left panel and viewed.
+The notebooks can also be selected and viewed from the menu in the left panel.
