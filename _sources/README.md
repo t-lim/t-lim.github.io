@@ -1,6 +1,9 @@
 # SELF-LEARNING TUTORIAL
 
-__Fine-Tuning and Retrieval-Augmentation: Teaching LLMs new tricks__
+__(AI for Healthcare, Spring 2024)__
+
+
+## Fine-Tuning and Retrieval-Augmentation: Teaching LLMs new tricks
 
 Instruction-tuned LLM's have achieved superior natural language
 processing capabilities with promising applications in healthcare, for
