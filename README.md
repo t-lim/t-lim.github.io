@@ -37,8 +37,8 @@ where privacy, security and mobility are critical concerns.
 
 ## Downloads
 
-This tutorial comprises presentation slides, as well as python code, 
-all of which can be downloaded from the links below:
+This tutorial comprises a presentation slide deck, as well as
+three python code notebooks, all of which can be downloaded from the links below:
 
 - [Tutorial Slides (pdf format)](https://t-lim.github.io/tutorial.pdf) or [(powerpoint format)](https://t-lim.github.io/tutorial.pptx)
 - [finetune_nli.ipynb](https://t-lim.github.io/_sources/finetune_nli.ipynb) - Fine-tune for Medical natural language inference (NLI) task
