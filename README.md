@@ -37,7 +37,7 @@ mobility are critical concerns.
 You can access the presentation slides, as well as the python code,
 from the links below:
 
-- [Slides](https://t-lim.github.io/tutorial.pdf)
+- [Slides (pdf format)](https://t-lim.github.io/tutorial.pdf) [(ppt format)](https://t-lim.github.io/tutorial.pptx)
 - [electra_nli.ipynb](https://t-lim.github.io/_sources/electra_nli.ipynb)
 - [finetune_nli.ipynb](https://t-lim.github.io/_sources/finetune_nli.ipynb)
 - [rag_pubmedqa.ipynb](https://t-lim.github.io/_sources/rag_pubmedqa.ipynb)
