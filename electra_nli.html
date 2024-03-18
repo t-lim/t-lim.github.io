@@ -9,7 +9,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-    <title>Fine-tune Electra encoder transformer model for Medical NLI task &#8212; Fine-Tuning and Retrieval-Augmentation: Teaching LLMs new tricks</title>
+    <title>Appendix: Introduction to using HF transformers &#8212; Fine-Tuning and Retrieval-Augmentation: Teaching LLMs new tricks</title>
   
   
   
@@ -152,7 +152,7 @@ const thebe_selector_output = ".output, .cell_output"
         <ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="finetune_nli.html">Fine-tune LLM for Medical NLI task</a></li>
 <li class="toctree-l1"><a class="reference internal" href="rag_pubmedqa.html">Retrieval-Augmented Generation for Medical Question-Answering</a></li>
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">Fine-tune Electra encoder transformer model for Medical NLI task</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Appendix: Introduction to using HF transformers</a></li>
 </ul>
 
     </div>
@@ -336,7 +336,7 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Fine-tune Electra encoder transformer model for Medical NLI task</h1>
+    <h1>Appendix: Introduction to using HF transformers</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -363,11 +363,15 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article" role="main">
                   
-  <section class="tex2jax_ignore mathjax_ignore" id="fine-tune-electra-encoder-transformer-model-for-medical-nli-task">
-<h1>Fine-tune Electra encoder transformer model for Medical NLI task<a class="headerlink" href="#fine-tune-electra-encoder-transformer-model-for-medical-nli-task" title="Permalink to this heading">#</a></h1>
+  <section class="tex2jax_ignore mathjax_ignore" id="appendix-introduction-to-using-hf-transformers">
+<h1>Appendix: Introduction to using HF transformers<a class="headerlink" href="#appendix-introduction-to-using-hf-transformers" title="Permalink to this heading">#</a></h1>
+<p>This appendix introduces the basics of using the Hugging Face transformers package, for the example task of fine-tuning an encoder-only transformer model, Electra (released by Google in 2020) to perform medical natural language inference.</p>
 <p>References:</p>
 <p><a class="reference external" href="https://huggingface.co/docs/transformers/en/training">https://huggingface.co/docs/transformers/en/training</a></p>
 <p><a class="github reference external" href="https://github.com/gregdurrett/fp-dataset-artifacts">gregdurrett/fp-dataset-artifacts</a></p>
+<ul class="simple">
+<li><p>many portions of the code below were adapted from Greg Durrett’s NLP course package.</p></li>
+</ul>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
