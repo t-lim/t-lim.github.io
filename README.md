@@ -40,10 +40,17 @@ where privacy, security and mobility are critical user concerns.
 This tutorial comprises a presentation slide deck as well as
 three python code notebooks, all of which can be downloaded from the links below:
 
-- [Tutorial Slides (pdf format)](https://t-lim.github.io/tutorial.pdf) or [(powerpoint format)](https://t-lim.github.io/tutorial.pptx)
-- [finetune_nli.ipynb](https://t-lim.github.io/_sources/finetune_nli.ipynb) - Fine-tune for Medical natural language inference (NLI) task
-- [rag_pubmedqa.ipynb](https://t-lim.github.io/_sources/rag_pubmedqa.ipynb) - Retrieval-Augmented Generation (RAG) for Medical question-answering (QA) task
-- [electra_nli.ipynb](https://t-lim.github.io/_sources/electra_nli.ipynb) - Appendix: Introduction to using Hugging Face transformers module
+- [Tutorial Slides (pdf format)](https://t-lim.github.io/tutorial.pdf)
+or [(powerpoint format)](https://t-lim.github.io/tutorial.pptx)
+
+- [finetune_nli.ipynb](https://github.com/t-lim/t-lim.github.io/blob/main/_sources/finetune_nli.ipynb) -
+Fine-tune for Medical natural language inference (NLI) task
+
+- [rag_pubmedqa.ipynb](https://github.com/t-lim/t-lim.github.io/blob/main/_sources/rag_pubmedqa.ipynb) -
+Retrieval-Augmented Generation (RAG) for Medical question-answering (QA) task
+
+- [electra_nli.ipynb](https://github.com/t-lim/t-lim.github.io/blob/main/_sources/electra_nli.ipynb) -
+Appendix: Introduction to using Hugging Face transformers module
 
 The notebooks can also be selected and viewed from the menu in the left panel.
 
