@@ -14,7 +14,7 @@ scarce, skilled, human labor to be deployed elsewhere.
 This tutorial explores the use of open-source LLMs in healthcare NLP
 tasks, specifically for PubMed question answering and Medical natural
 language inference, and demonstrates how to overcome the following
-hurdles:
+challenges:
 
 1. If the model has not been instructed for the required
 downstream task, then fine-tuning can enhance its performance.
@@ -32,7 +32,7 @@ July 2023) as well as the recently-released Gemma (Google, February
 enough to potentially fit in mobile devices. Such approaches towards
 customizing open-source LLM’s are particularly important for
 conversational and textual applications in the healthcare domain,
-where privacy, security and mobility are critical concerns.
+where privacy, security and mobility are critical user concerns.
 
 
 ## Downloads
@@ -46,3 +46,8 @@ three python code notebooks, all of which can be downloaded from the links below
 - [electra_nli.ipynb](https://t-lim.github.io/_sources/electra_nli.ipynb) - Appendix: Introduction to using Hugging Face transformers module
 
 The notebooks can also be selected and viewed from the menu in the left panel.
+
+This web site was generated using [jupyter-book](https://jupyterbook.org).
+
+
+
