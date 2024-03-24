@@ -54,7 +54,8 @@ Appendix: Introduction to using Hugging Face transformers module
 
 The notebooks can also be selected and viewed from the menu in the left panel.
 
-This web site was generated using [jupyter-book](https://jupyterbook.org).
+This [web site](http://t-lim.github.io) was generated using
+[jupyter-book](https://jupyterbook.org).
 
 
 
